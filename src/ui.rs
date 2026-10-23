@@ -4,6 +4,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BollySeerr — Hindi & Bollywood Discovery</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%230f172a'/%3E%3Cpath d='M116 130 L136 130 L106 176 L86 176 Z' fill='%23FF9933'/%3E%3Cpath d='M166 130 L186 130 L156 176 L136 176 Z' fill='%23FFFFFF'/%3E%3Cpath d='M216 130 L236 130 L206 176 L186 176 Z' fill='%2310B981'/%3E%3Cpolygon points='256,220 268,255 305,255 275,277 286,312 256,290 226,312 237,277 207,255 244,255' fill='%23F59E0B' stroke='%23FEF08A' stroke-width='4'/%3E%3C/svg%3E">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,8 +43,28 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
   <header class="sticky top-0 z-40 backdrop-blur-xl bg-gray-950/85 border-b border-gray-800/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 font-extrabold text-xl tracking-tight text-white">
-          B
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-indigo-950/80 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/10 p-1.5 overflow-hidden">
+          <svg viewBox="0 0 512 512" class="w-full h-full drop-shadow">
+            <g transform="translate(256, 260) rotate(-6)">
+              <rect x="-140" y="-75" width="280" height="190" rx="18" fill="#18181b" stroke="#3f3f46" stroke-width="4"/>
+              <g transform="translate(-140, -130) rotate(-14, 0, 45)">
+                <rect x="0" y="0" width="280" height="46" rx="8" fill="#09090b" stroke="#F59E0B" stroke-width="3"/>
+                <path d="M35 0 L55 0 L25 46 L5 46 Z" fill="#FF9933"/>
+                <path d="M85 0 L105 0 L75 46 L55 46 Z" fill="#FFFFFF"/>
+                <path d="M135 0 L155 0 L125 46 L105 46 Z" fill="#10B981"/>
+                <path d="M185 0 L205 0 L175 46 L155 46 Z" fill="#FF9933"/>
+                <path d="M235 0 L255 0 L225 46 L205 46 Z" fill="#FFFFFF"/>
+              </g>
+              <rect x="-140" y="-75" width="280" height="38" rx="6" fill="#09090b" stroke="#52525b" stroke-width="2"/>
+              <path d="M-105 -75 L-85 -75 L-115 -37 L-135 -37 Z" fill="#FF9933"/>
+              <path d="M-55 -75 L-35 -75 L-65 -37 L-85 -37 Z" fill="#FFFFFF"/>
+              <path d="M-5 -75 L15 -75 L-15 -37 L-35 -37 Z" fill="#10B981"/>
+              <path d="M45 -75 L65 -75 L35 -37 L15 -37 Z" fill="#FF9933"/>
+              <path d="M95 -75 L115 -75 L85 -37 L65 -37 Z" fill="#FFFFFF"/>
+              <circle cx="0" cy="36" r="46" fill="#F59E0B" fill-opacity="0.3"/>
+              <path d="M0 0 L9 26 L38 26 L15 44 L24 70 L0 54 L-24 70 L-15 44 L-38 26 L-9 26 Z" fill="#F59E0B" stroke="#FEF08A" stroke-width="3"/>
+            </g>
+          </svg>
         </div>
         <div>
           <div class="flex items-center gap-2">
