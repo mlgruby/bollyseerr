@@ -1,6 +1,6 @@
 [package]
 name = "bollyseerr"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Bollywood & Hindi Movie and Web Series Discovery Agent and Request UI for Jellyseerr/Radarr/Sonarr"
 license = "MIT"
@@ -15,7 +15,7 @@ rusqlite = { version = "0.32", features = ["bundled", "chrono"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
-tokio = { version = "1.43", default-features = false, features = ["rt", "net", "time", "sync", "macros", "signal"] }
+tokio = { version = "1.43", default-features = false, features = ["rt", "rt-multi-thread", "net", "time", "sync", "macros", "signal"] }
 tower-http = { version = "0.6", default-features = false, features = ["cors", "trace", "compression-gzip"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", default-features = false, features = ["env-filter", "fmt", "std", "ansi"] }
@@ -25,7 +25,7 @@ wiremock = "0.6"
 tempfile = "3.15"
 
 [profile.release]
-opt-level = "z"
+opt-level = 3
 lto = true
 codegen-units = 1
 panic = "abort"

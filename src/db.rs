@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Clone)]
 pub struct Database {
     conn: Arc<Mutex<Connection>>,
+    cached_items_json: Arc<Mutex<Option<Arc<str>>>>,
 }
 
 impl Database {
@@ -38,9 +39,31 @@ impl Database {
 
         let db = Self {
             conn: Arc::new(Mutex::new(conn)),
+            cached_items_json: Arc::new(Mutex::new(None)),
         };
         db.migrate()?;
         Ok(db)
+    }
+
+    fn invalidate_cache(&self) {
+        if let Ok(mut guard) = self.cached_items_json.lock() {
+            *guard = None;
+        }
+    }
+
+    pub fn get_all_items_json(&self) -> Result<Arc<str>> {
+        if let Ok(guard) = self.cached_items_json.lock()
+            && let Some(ref cached) = *guard
+        {
+            return Ok(Arc::clone(cached));
+        }
+
+        let items = self.get_all_items()?;
+        let serialized: Arc<str> = serde_json::to_string(&items)?.into();
+        if let Ok(mut guard) = self.cached_items_json.lock() {
+            *guard = Some(Arc::clone(&serialized));
+        }
+        Ok(serialized)
     }
 
     fn migrate(&self) -> Result<()> {
@@ -88,7 +111,10 @@ impl Database {
 
     pub fn upsert_item(&self, item: &MediaItem) -> Result<()> {
         let conn = self.conn.lock().expect("db mutex poisoned");
-        Self::upsert_item_with_conn(&conn, item)
+        Self::upsert_item_with_conn(&conn, item)?;
+        drop(conn);
+        self.invalidate_cache();
+        Ok(())
     }
 
     pub fn upsert_batch(&self, items: &[MediaItem]) -> Result<()> {
@@ -98,6 +124,8 @@ impl Database {
             Self::upsert_item_with_conn(&tx, item)?;
         }
         tx.commit()?;
+        drop(conn);
+        self.invalidate_cache();
         Ok(())
     }
 
@@ -178,6 +206,10 @@ impl Database {
             params![cutoff_date],
         )?;
         let _ = conn.execute_batch("PRAGMA shrink_memory;");
+        drop(conn);
+        if deleted > 0 {
+            self.invalidate_cache();
+        }
         Ok(deleted)
     }
 
@@ -210,6 +242,9 @@ impl Database {
             tmdb_id,
             media_type.as_str()
         ])?;
+        drop(stmt);
+        drop(conn);
+        self.invalidate_cache();
         Ok(())
     }
 
