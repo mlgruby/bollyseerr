@@ -1,0 +1,25 @@
+[package]
+name = "bollyseerr"
+version = "0.1.0"
+edition = "2024"
+description = "Bollywood & Hindi Movie and Web Series Discovery Agent and Request UI for Jellyseerr/Radarr/Sonarr"
+license = "MIT"
+authors = ["mlgruby"]
+
+[dependencies]
+anyhow = "1.0"
+axum = { version = "0.8", features = ["json", "macros"] }
+chrono = { version = "0.4", features = ["serde"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+rusqlite = { version = "0.32", features = ["bundled", "chrono"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+tokio = { version = "1.43", features = ["full"] }
+tower-http = { version = "0.6", features = ["cors", "trace", "compression-gzip"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+[dev-dependencies]
+wiremock = "0.6"
+tempfile = "3.15"
