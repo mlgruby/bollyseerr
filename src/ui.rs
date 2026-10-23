@@ -372,6 +372,24 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       </div>`;
     }
 
+    function getActorFallbackAvatar(name) {
+      const initials = (name || '').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+      const gradients = [
+        'from-amber-600 to-orange-700 text-amber-100',
+        'from-rose-600 to-pink-700 text-rose-100',
+        'from-emerald-600 to-teal-700 text-emerald-100',
+        'from-indigo-600 to-purple-700 text-indigo-100',
+        'from-cyan-600 to-blue-700 text-cyan-100',
+      ];
+      let hash = 0;
+      for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      const grad = gradients[Math.abs(hash) % gradients.length];
+      return `<div class="w-full h-full flex flex-col items-center justify-center font-bold text-xs bg-gradient-to-br ${grad} shadow-inner select-none">
+        <svg class="w-5 h-5 mb-0.5 opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span class="text-[9px] tracking-wider leading-none font-extrabold">${initials}</span>
+      </div>`;
+    }
+
     function renderGrid() {
       const q = document.getElementById('searchInput').value.trim().toLowerCase();
       const langMode = document.getElementById('langFilter').value;
@@ -633,9 +651,10 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             const castSec = document.getElementById('modalCastSection');
             if (castList && castSec) {
               castList.innerHTML = details.cast.map(c => {
+                const safeName = (c.name || 'Actor').replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const photo = c.profile_path
-                  ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${c.name}" class="w-full h-full object-cover" />`
-                  : `<div class="w-full h-full flex items-center justify-center font-bold text-indigo-300 text-xs bg-indigo-950/80">${(c.name || '').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>`;
+                  ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${safeName}" class="w-full h-full object-cover" onerror="this.outerHTML = getActorFallbackAvatar('${safeName}')" />`
+                  : getActorFallbackAvatar(c.name);
                 return `
                   <div class="flex-shrink-0 w-20 flex flex-col items-center text-center">
                     <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 border border-gray-700/80 mb-1 shadow-sm">

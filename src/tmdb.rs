@@ -298,10 +298,14 @@ impl TmdbClient {
         if let Some(c) = data.credits {
             for entry in c.cast.into_iter().take(12) {
                 if !entry.name.trim().is_empty() {
+                    let mut profile_path = entry.profile_path;
+                    if profile_path.is_none() {
+                        profile_path = self.lookup_person_photo(&entry.name).await.ok().flatten();
+                    }
                     cast.push(CastMember {
                         name: entry.name,
                         character: entry.character,
-                        profile_path: entry.profile_path,
+                        profile_path,
                     });
                 }
             }
@@ -359,6 +363,45 @@ impl TmdbClient {
             crew,
             keywords,
         })
+    }
+
+    pub async fn lookup_person_photo(&self, name: &str) -> Result<Option<String>> {
+        #[derive(Deserialize)]
+        struct PersonSearchResp {
+            #[serde(default)]
+            results: Vec<PersonResultEntry>,
+        }
+        #[derive(Deserialize)]
+        struct PersonResultEntry {
+            profile_path: Option<String>,
+        }
+
+        let url = format!("{}/search/person", self.base_url);
+        let resp = self
+            .client
+            .get(&url)
+            .query(&[
+                ("api_key", self.api_key.as_str()),
+                ("query", name),
+                ("language", "en-US"),
+            ])
+            .send()
+            .await?;
+
+        if !resp.status().is_success() {
+            return Ok(None);
+        }
+
+        let data: PersonSearchResp = resp.json().await?;
+        for p in data.results {
+            if let Some(path) = p.profile_path {
+                let trimmed = path.trim();
+                if !trimmed.is_empty() {
+                    return Ok(Some(trimmed.to_string()));
+                }
+            }
+        }
+        Ok(None)
     }
 
     pub async fn discover_all(&self, min_date: &str, max_date: &str) -> Result<Vec<MediaItem>> {
