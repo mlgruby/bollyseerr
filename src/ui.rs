@@ -307,17 +307,51 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       </button>`;
     }
 
+    function levenshteinDistance(s1, s2) {
+      const m = s1.length, n = s2.length;
+      if (Math.abs(m - n) > 2) return 99;
+      const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return dp[m][n];
+    }
+
+    function fuzzyMatch(haystack, needle) {
+      if (!needle) return true;
+      if (haystack.includes(needle)) return true;
+      const words = haystack.split(/[\s:,\-_]+/);
+      for (const w of words) {
+        if (w.length >= 4 && Math.abs(w.length - needle.length) <= 2) {
+          if (levenshteinDistance(w, needle) <= 2) return true;
+        }
+      }
+      return false;
+    }
+
     function renderGrid() {
       const q = document.getElementById('searchInput').value.trim().toLowerCase();
       const langMode = document.getElementById('langFilter').value;
       const ottMode = document.getElementById('ottFilter').value;
 
       let filtered = allItems.filter(item => {
-        if (currentWindow === 'released' && item.release_date > todayStr) return false;
-        if (currentWindow === 'in_theaters' && (item.release_date > todayStr || item.media_type !== 'movie' || isItemOnOtt(item))) return false;
-        if (currentWindow === 'on_ott' && (item.release_date > todayStr || !isItemOnOtt(item))) return false;
-        if (currentWindow === 'upcoming' && item.release_date <= todayStr) return false;
-        if (currentWindow === 'library' && item.homelab_status === 'unrequested') return false;
+        // When searching with a query, search globally across all tabs
+        if (!q) {
+          if (currentWindow === 'released' && item.release_date > todayStr) return false;
+          if (currentWindow === 'in_theaters' && (item.release_date > todayStr || item.media_type !== 'movie' || isItemOnOtt(item))) return false;
+          if (currentWindow === 'on_ott' && (item.release_date > todayStr || !isItemOnOtt(item))) return false;
+          if (currentWindow === 'upcoming' && item.release_date <= todayStr) return false;
+          if (currentWindow === 'library' && item.homelab_status === 'unrequested') return false;
+        }
 
         if (currentType !== 'all' && item.media_type !== currentType) return false;
         if (langMode === 'hi' && item.is_hindi_dub) return false;
@@ -326,12 +360,20 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
         if (q) {
           const hay = `${item.title} ${item.original_title} ${(item.genres || []).join(' ')} ${(item.ott_providers || []).join(' ')}`.toLowerCase();
-          if (!hay.includes(q)) return false;
+          if (!fuzzyMatch(hay, q)) return false;
         }
         return true;
       });
 
-      if (currentWindow === 'upcoming') {
+      if (q) {
+        // Sort search results: exact title matches first, then by popularity
+        filtered.sort((a, b) => {
+          const aExact = a.title.toLowerCase().includes(q) ? 1 : 0;
+          const bExact = b.title.toLowerCase().includes(q) ? 1 : 0;
+          if (aExact !== bExact) return bExact - aExact;
+          return b.popularity - a.popularity;
+        });
+      } else if (currentWindow === 'upcoming') {
         filtered.sort((a, b) => a.release_date.localeCompare(b.release_date));
       } else {
         filtered.sort((a, b) => b.release_date.localeCompare(a.release_date));
@@ -353,9 +395,10 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           : 'https://via.placeholder.com/500x750/1f2937/9ca3af?text=No+Poster';
 
         const diff = daysDifference(item.release_date);
+        const isUpcoming = item.release_date > todayStr;
         let windowBadge = '';
         if (diff > 0) {
-          windowBadge = `In ${diff}d`;
+          windowBadge = `⏳ In ${diff}d`;
         } else {
           const daysLeft = Math.max(0, 150 + diff);
           windowBadge = `${Math.abs(diff)}d ago • ${daysLeft}d left`;
@@ -373,9 +416,16 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">📺 ${p}</span>`
         ).join(' ');
 
-        const releaseModeTag = isItemOnOtt(item)
-          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/50">${item.release_type}</span>`
-          : `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/50">🎬 ${item.release_type}</span>`;
+        let releaseModeTag = '';
+        if (isUpcoming) {
+          releaseModeTag = isItemOnOtt(item)
+            ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/50">📺 Upcoming OTT</span>`
+            : `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/50">🎬 Theatrical Release</span>`;
+        } else {
+          releaseModeTag = isItemOnOtt(item)
+            ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/50">${item.release_type}</span>`
+            : `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/50">🎬 ${item.release_type}</span>`;
+        }
 
         return `
           <div onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="poster-card group bg-gray-900/90 border border-gray-800/90 rounded-2xl overflow-hidden flex flex-col cursor-pointer">

@@ -79,7 +79,7 @@ impl Config {
         let upcoming_days = env::var("UPCOMING_DAYS")
             .ok()
             .and_then(|v| v.parse().ok())
-            .unwrap_or(180);
+            .unwrap_or(540);
 
         let discovery_interval_seconds = env::var("DISCOVERY_INTERVAL_SECONDS")
             .ok()
