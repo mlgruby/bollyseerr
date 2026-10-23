@@ -8,7 +8,7 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-#[tokio::main(flavor = "current_thread")]
+#[tokio::main(flavor = "multi_thread", worker_threads = 2)]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
 
     let config = Config::from_env();
     info!(
-        "Starting BollySeerr on port {} (single-threaded low-memory runtime, retention={}d, upcoming={}d)",
+        "Starting BollySeerr on port {} (2-worker runtime, retention={}d, upcoming={}d)",
         config.port, config.retention_days, config.upcoming_days
     );
 

@@ -1,9 +1,9 @@
 use crate::agent::AgentState;
-use crate::models::{HomelabStatus, MediaItem, RequestPayload, RequestResult, SyncStatus};
+use crate::models::{HomelabStatus, RequestPayload, RequestResult, SyncStatus};
 use crate::ui::INDEX_HTML;
 use axum::extract::State;
-use axum::http::StatusCode;
-use axum::response::{Html, IntoResponse};
+use axum::http::{StatusCode, header};
+use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use chrono::Utc;
@@ -70,12 +70,18 @@ async fn sync_status_handler(
 
 async fn list_items_handler(
     State(state): State<AgentState>,
-) -> Result<Json<Vec<MediaItem>>, (StatusCode, String)> {
-    state
+) -> Result<Response, (StatusCode, String)> {
+    let payload = state
         .db
-        .get_all_items()
-        .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))
+        .get_all_items_json()
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok((
+        StatusCode::OK,
+        [(header::CONTENT_TYPE, "application/json")],
+        payload.to_string(),
+    )
+        .into_response())
 }
 
 async fn request_item_handler(
