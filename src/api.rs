@@ -1,6 +1,7 @@
 use crate::agent::AgentState;
 use crate::models::{
-    HomelabStatus, MediaCreditsAndKeywords, RequestPayload, RequestResult, SyncStatus,
+    DeletePayload, DeleteResult, HomelabStatus, MediaCreditsAndKeywords, RequestPayload,
+    RequestResult, SyncStatus,
 };
 use crate::ui::INDEX_HTML;
 use axum::extract::{Path, State};
@@ -24,6 +25,10 @@ pub fn build_router(state: AgentState) -> Router {
         .route("/api/items", get(list_items_handler))
         .route("/api/details/{media_type}/{id}", get(item_details_handler))
         .route("/api/request", post(request_item_handler))
+        .route(
+            "/api/delete",
+            post(delete_item_handler).delete(delete_item_handler),
+        )
         .route("/api/sync", post(trigger_sync_handler))
         .layer(CompressionLayer::new())
         .layer(CorsLayer::permissive())
@@ -116,6 +121,36 @@ async fn request_item_handler(
                 status: HomelabStatus::Unrequested,
                 message: format!("{e:#}"),
                 via: "none".to_string(),
+            }),
+        ),
+    }
+}
+
+async fn delete_item_handler(
+    State(state): State<AgentState>,
+    Json(payload): Json<DeletePayload>,
+) -> impl IntoResponse {
+    match state
+        .homelab
+        .delete_media(&state.db, payload.tmdb_id, payload.media_type)
+        .await
+    {
+        Ok(res) => {
+            let bg_state = state.clone();
+            tokio::spawn(async move {
+                let _ = bg_state.run_status_sync().await;
+            });
+            (StatusCode::OK, Json(res))
+        }
+        Err(e) => (
+            StatusCode::BAD_GATEWAY,
+            Json(DeleteResult {
+                success: false,
+                message: format!("{e:#}"),
+                radarr_deleted: false,
+                sonarr_deleted: false,
+                seerr_deleted: false,
+                jellyfin_refreshed: false,
             }),
         ),
     }

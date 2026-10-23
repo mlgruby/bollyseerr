@@ -115,6 +115,29 @@ async fn test_homelab_status_sync_and_seerr_request() {
         .mount(&mock_server)
         .await;
 
+    // Mock Radarr DELETE movie
+    Mock::given(method("DELETE"))
+        .and(path("/api/v3/movie/55"))
+        .respond_with(ResponseTemplate::new(200))
+        .mount(&mock_server)
+        .await;
+
+    // Mock Seerr GET & DELETE media
+    Mock::given(method("GET"))
+        .and(path("/api/v1/movie/102"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "id": 102,
+            "mediaInfo": { "id": 555 }
+        })))
+        .mount(&mock_server)
+        .await;
+
+    Mock::given(method("DELETE"))
+        .and(path("/api/v1/media/555"))
+        .respond_with(ResponseTemplate::new(200))
+        .mount(&mock_server)
+        .await;
+
     let db = Database::open(":memory:").unwrap();
     db.upsert_item(&sample_item(102, MediaType::Movie, "Stree 3", "2026-09-15"))
         .unwrap();
@@ -140,6 +163,8 @@ async fn test_homelab_status_sync_and_seerr_request() {
         radarr_api_key: Some("radarr-secret".to_string()),
         sonarr_url: mock_server.uri(),
         sonarr_api_key: Some("sonarr-secret".to_string()),
+        jellyfin_url: None,
+        jellyfin_api_key: None,
         retention_days: 90,
         upcoming_days: 180,
         discovery_interval_seconds: 3600,
@@ -170,4 +195,19 @@ async fn test_homelab_status_sync_and_seerr_request() {
     let m103 = db.get_item(103, MediaType::Movie).unwrap().unwrap();
     assert_eq!(m103.homelab_status, HomelabStatus::Requested);
     assert_eq!(m103.seerr_request_id, Some(999));
+
+    // Delete movie 102 (removes from Radarr + Seerr, cleans library, resets local DB)
+    let del_res = state
+        .homelab
+        .delete_media(&db, 102, MediaType::Movie)
+        .await
+        .unwrap();
+    assert!(del_res.success);
+    assert!(del_res.radarr_deleted);
+    assert!(del_res.seerr_deleted);
+
+    let m102_after = db.get_item(102, MediaType::Movie).unwrap().unwrap();
+    assert_eq!(m102_after.homelab_status, HomelabStatus::Unrequested);
+    assert_eq!(m102_after.radarr_id, None);
+    assert_eq!(m102_after.seerr_request_id, None);
 }

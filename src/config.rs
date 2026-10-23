@@ -15,6 +15,8 @@ pub struct Config {
     pub radarr_api_key: Option<String>,
     pub sonarr_url: String,
     pub sonarr_api_key: Option<String>,
+    pub jellyfin_url: Option<String>,
+    pub jellyfin_api_key: Option<String>,
     pub retention_days: i64,
     pub upcoming_days: i64,
     pub discovery_interval_seconds: u64,
@@ -71,6 +73,16 @@ impl Config {
             .ok()
             .filter(|s| !s.trim().is_empty());
 
+        let jellyfin_url = env::var("JELLYFIN_URL")
+            .ok()
+            .filter(|s| !s.trim().is_empty())
+            .map(|u| u.trim_end_matches('/').to_string());
+
+        let jellyfin_api_key = env::var("JELLYFIN_API_KEY")
+            .or_else(|_| env::var("JELLYFIN_TOKEN"))
+            .ok()
+            .filter(|s| !s.trim().is_empty());
+
         let retention_days = env::var("RETENTION_DAYS")
             .ok()
             .and_then(|v| v.parse().ok())
@@ -108,6 +120,8 @@ impl Config {
             radarr_api_key,
             sonarr_url: sonarr_url.trim_end_matches('/').to_string(),
             sonarr_api_key,
+            jellyfin_url,
+            jellyfin_api_key,
             retention_days,
             upcoming_days,
             discovery_interval_seconds,
