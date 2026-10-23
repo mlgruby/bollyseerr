@@ -51,7 +51,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
               BollySeerr
             </h1>
             <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
-              90-Day Agent
+              5-Month Rolling Agent
             </span>
           </div>
           <p class="text-xs text-gray-400 hidden sm:block">
@@ -91,9 +91,15 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     <!-- Filter Bar -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-900/80 pt-2.5">
       <!-- Window Tabs -->
-      <div class="flex items-center gap-1.5 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
+      <div class="flex flex-wrap items-center gap-1.5 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
         <button onclick="setWindowFilter('released')" id="tab-released" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-          Released (Last 3M) <span id="count-released" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
+          Released (Last 5M) <span id="count-released" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
+        </button>
+        <button onclick="setWindowFilter('in_theaters')" id="tab-in_theaters" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+          🎬 In Theaters <span id="count-in_theaters" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
+        </button>
+        <button onclick="setWindowFilter('on_ott')" id="tab-on_ott" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+          📺 Now on OTT <span id="count-on_ott" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
         </button>
         <button onclick="setWindowFilter('upcoming')" id="tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
           Upcoming <span id="count-upcoming" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
@@ -184,10 +190,17 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       setTimeout(() => t.classList.add('hidden'), 4000);
     }
 
+    function isItemOnOtt(item) {
+      return (item.ott_providers && item.ott_providers.length > 0) ||
+             (item.release_type && item.release_type.includes('OTT')) ||
+             item.media_type === 'tv';
+    }
+
     function setWindowFilter(w) {
       currentWindow = w;
-      ['released', 'upcoming', 'library', 'all'].forEach(k => {
+      ['released', 'in_theaters', 'on_ott', 'upcoming', 'library', 'all'].forEach(k => {
         const el = document.getElementById(`tab-${k}`);
+        if (!el) return;
         if (k === w) {
           el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow transition';
         } else {
@@ -226,11 +239,17 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     }
 
     function updateHeaderCounts() {
-      document.getElementById('count-released').textContent = syncMeta.released_count ?? 0;
+      const releasedItems = allItems.filter(i => i.release_date <= todayStr);
+      const inTheatersCount = releasedItems.filter(i => i.media_type === 'movie' && !isItemOnOtt(i)).length;
+      const onOttCount = releasedItems.filter(i => isItemOnOtt(i)).length;
+
+      document.getElementById('count-released').textContent = syncMeta.released_count ?? releasedItems.length;
+      document.getElementById('count-in_theaters').textContent = inTheatersCount;
+      document.getElementById('count-on_ott').textContent = onOttCount;
       document.getElementById('count-upcoming').textContent = syncMeta.upcoming_count ?? 0;
       document.getElementById('count-library').textContent = syncMeta.library_or_requested_count ?? 0;
 
-      const summary = `${syncMeta.total_movies || 0} Movies • ${syncMeta.total_series || 0} Web Series (Rolling 90-Day Window + Upcoming • Auto-pruned: ${syncMeta.pruned_last_run || 0})`;
+      const summary = `${syncMeta.total_movies || 0} Movies • ${syncMeta.total_series || 0} Web Series (Rolling 5-Month / 150-Day Window + Upcoming • Auto-pruned: ${syncMeta.pruned_last_run || 0})`;
       document.getElementById('statusSummary').textContent = summary;
 
       const lastDisc = syncMeta.last_discovery_sync ? new Date(syncMeta.last_discovery_sync).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'running...';
@@ -295,6 +314,8 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
       let filtered = allItems.filter(item => {
         if (currentWindow === 'released' && item.release_date > todayStr) return false;
+        if (currentWindow === 'in_theaters' && (item.release_date > todayStr || item.media_type !== 'movie' || isItemOnOtt(item))) return false;
+        if (currentWindow === 'on_ott' && (item.release_date > todayStr || !isItemOnOtt(item))) return false;
         if (currentWindow === 'upcoming' && item.release_date <= todayStr) return false;
         if (currentWindow === 'library' && item.homelab_status === 'unrequested') return false;
 
@@ -336,7 +357,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         if (diff > 0) {
           windowBadge = `In ${diff}d`;
         } else {
-          const daysLeft = Math.max(0, 90 + diff);
+          const daysLeft = Math.max(0, 150 + diff);
           windowBadge = `${Math.abs(diff)}d ago • ${daysLeft}d left`;
         }
 
@@ -349,8 +370,12 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           : `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600/90 text-white">MOVIE</span>`;
 
         const ottPills = (item.ott_providers || []).slice(0, 2).map(p =>
-          `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-800 text-indigo-300 border border-gray-700">${p}</span>`
+          `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">📺 ${p}</span>`
         ).join(' ');
+
+        const releaseModeTag = isItemOnOtt(item)
+          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/50">${item.release_type}</span>`
+          : `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/50">🎬 ${item.release_type}</span>`;
 
         return `
           <div onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="poster-card group bg-gray-900/90 border border-gray-800/90 rounded-2xl overflow-hidden flex flex-col cursor-pointer">
@@ -377,7 +402,8 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
                 </h3>
                 <p class="text-[11px] text-gray-400 mt-0.5">${windowBadge}</p>
                 <div class="flex flex-wrap gap-1 mt-1.5">
-                  ${ottPills || `<span class="text-[10px] text-gray-500">${item.release_type}</span>`}
+                  ${releaseModeTag}
+                  ${ottPills}
                 </div>
               </div>
 

@@ -441,24 +441,34 @@ impl TmdbClient {
             }
 
             if let Some(rd) = detail.release_dates {
+                let mut has_digital = false;
+                let mut has_theatrical = false;
                 for c in rd.results {
-                    if c.iso_3166_1 == "IN" {
-                        let has_digital = c.release_dates.iter().any(|d| d.release_type == 4);
-                        let has_theatrical = c
-                            .release_dates
+                    if c.iso_3166_1 == "IN" || c.iso_3166_1 == "US" || c.iso_3166_1 == "GB" {
+                        if c.release_dates.iter().any(|d| d.release_type == 4) {
+                            has_digital = true;
+                        }
+                        if c.release_dates
                             .iter()
-                            .any(|d| d.release_type == 2 || d.release_type == 3);
-                        if has_digital && !has_theatrical {
-                            release_type = "OTT Direct".to_string();
-                        } else if has_digital && has_theatrical {
-                            release_type = "Theatrical + OTT".to_string();
+                            .any(|d| d.release_type == 2 || d.release_type == 3)
+                        {
+                            has_theatrical = true;
                         }
                     }
                 }
-            }
-
-            if !ott_providers.is_empty() && release_type == "Theatrical" {
-                release_type = "OTT / Streaming".to_string();
+                if (has_digital || !ott_providers.is_empty()) && has_theatrical {
+                    release_type = "Theater + OTT".to_string();
+                } else if has_digital && !has_theatrical {
+                    release_type = "OTT Direct".to_string();
+                } else if !ott_providers.is_empty() {
+                    release_type = "Theater + OTT".to_string();
+                } else {
+                    release_type = "In Theaters".to_string();
+                }
+            } else if !ott_providers.is_empty() {
+                release_type = "Theater + OTT".to_string();
+            } else {
+                release_type = "In Theaters".to_string();
             }
 
             if let Some(vids) = detail.videos {
