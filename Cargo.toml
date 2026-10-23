@@ -1,6 +1,6 @@
 [package]
 name = "bollyseerr"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
 description = "Bollywood & Hindi Movie and Web Series Discovery Agent and Request UI for Jellyseerr/Radarr/Sonarr"
 license = "MIT"

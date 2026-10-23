@@ -1,12 +1,15 @@
 use crate::config::Config;
 use crate::db::Database;
 use crate::homelab::HomelabClient;
+use crate::models::MediaCreditsAndKeywords;
 use crate::tmdb::TmdbClient;
 use anyhow::Result;
 use chrono::{Duration as ChronoDuration, Utc};
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
+use tokio::sync::RwLock;
 use tracing::{error, info};
 
 #[derive(Clone)]
@@ -16,6 +19,7 @@ pub struct AgentState {
     pub tmdb: Arc<TmdbClient>,
     pub homelab: Arc<HomelabClient>,
     pub is_syncing: Arc<AtomicBool>,
+    pub details_cache: Arc<RwLock<HashMap<(String, i64), MediaCreditsAndKeywords>>>,
 }
 
 impl AgentState {
@@ -32,6 +36,7 @@ impl AgentState {
             tmdb,
             homelab,
             is_syncing: Arc::new(AtomicBool::new(false)),
+            details_cache: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
