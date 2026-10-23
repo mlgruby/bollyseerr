@@ -74,7 +74,7 @@ impl Config {
         let retention_days = env::var("RETENTION_DAYS")
             .ok()
             .and_then(|v| v.parse().ok())
-            .unwrap_or(90);
+            .unwrap_or(150);
 
         let upcoming_days = env::var("UPCOMING_DAYS")
             .ok()
@@ -94,7 +94,7 @@ impl Config {
         let max_pages_per_query = env::var("MAX_PAGES_PER_QUERY")
             .ok()
             .and_then(|v| v.parse().ok())
-            .unwrap_or(12);
+            .unwrap_or(15);
 
         Self {
             port,
