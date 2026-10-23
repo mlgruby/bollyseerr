@@ -1,7 +1,9 @@
 use crate::agent::AgentState;
-use crate::models::{HomelabStatus, RequestPayload, RequestResult, SyncStatus};
+use crate::models::{
+    HomelabStatus, MediaCreditsAndKeywords, RequestPayload, RequestResult, SyncStatus,
+};
 use crate::ui::INDEX_HTML;
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::{StatusCode, header};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
@@ -20,6 +22,7 @@ pub fn build_router(state: AgentState) -> Router {
         .route("/status", get(health_handler))
         .route("/api/status", get(sync_status_handler))
         .route("/api/items", get(list_items_handler))
+        .route("/api/details/{media_type}/{id}", get(item_details_handler))
         .route("/api/request", post(request_item_handler))
         .route("/api/sync", post(trigger_sync_handler))
         .layer(CompressionLayer::new())
@@ -130,4 +133,26 @@ async fn trigger_sync_handler(State(state): State<AgentState>) -> impl IntoRespo
             "message": "Background TMDB discovery & homelab status sync started"
         })),
     )
+}
+
+async fn item_details_handler(
+    State(state): State<AgentState>,
+    Path((media_type, id)): Path<(String, i64)>,
+) -> Result<Json<MediaCreditsAndKeywords>, (StatusCode, String)> {
+    let key = (media_type.clone(), id);
+    {
+        let cache = state.details_cache.read().await;
+        if let Some(details) = cache.get(&key) {
+            return Ok(Json(details.clone()));
+        }
+    }
+
+    match state.tmdb.get_credits_and_keywords(&media_type, id).await {
+        Ok(details) => {
+            let mut cache = state.details_cache.write().await;
+            cache.insert(key, details.clone());
+            Ok(Json(details))
+        }
+        Err(e) => Err((StatusCode::BAD_GATEWAY, e.to_string())),
+    }
 }

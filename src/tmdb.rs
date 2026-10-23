@@ -1,4 +1,6 @@
-use crate::models::{HomelabStatus, MediaItem, MediaType};
+use crate::models::{
+    CastMember, CrewMember, HomelabStatus, MediaCreditsAndKeywords, MediaItem, MediaType,
+};
 use anyhow::{Context, Result};
 use chrono::Utc;
 use reqwest::Client;
@@ -211,6 +213,39 @@ struct ReleaseDateEntry {
     release_type: i32,
 }
 
+#[derive(Debug, Deserialize)]
+struct TmdbCreditsKeywordsResponse {
+    credits: Option<TmdbCreditsContainer>,
+    keywords: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TmdbCreditsContainer {
+    #[serde(default)]
+    cast: Vec<TmdbCastEntry>,
+    #[serde(default)]
+    crew: Vec<TmdbCrewEntry>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TmdbCastEntry {
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    character: String,
+    profile_path: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TmdbCrewEntry {
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    job: String,
+    #[serde(default)]
+    department: String,
+}
+
 impl TmdbClient {
     pub fn new(api_key: String, base_url: String, max_pages: u32) -> Self {
         let client = Client::builder()
@@ -228,6 +263,102 @@ impl TmdbClient {
             base_url: base_url.trim_end_matches('/').to_string(),
             max_pages,
         }
+    }
+
+    pub async fn get_credits_and_keywords(
+        &self,
+        media_type: &str,
+        tmdb_id: i64,
+    ) -> Result<MediaCreditsAndKeywords> {
+        let endpoint = if media_type == "tv" { "tv" } else { "movie" };
+        let url = format!("{}/{}/{}", self.base_url, endpoint, tmdb_id);
+
+        let resp = self
+            .client
+            .get(&url)
+            .query(&[
+                ("api_key", self.api_key.as_str()),
+                ("append_to_response", "credits,keywords"),
+                ("language", "en-US"),
+            ])
+            .send()
+            .await
+            .context("TMDB detail request failed")?;
+
+        if !resp.status().is_success() {
+            anyhow::bail!("TMDB returned HTTP {}", resp.status());
+        }
+
+        let data: TmdbCreditsKeywordsResponse = resp.json().await?;
+
+        let mut cast = Vec::new();
+        let mut crew = Vec::new();
+        let mut keywords = Vec::new();
+
+        if let Some(c) = data.credits {
+            for entry in c.cast.into_iter().take(12) {
+                if !entry.name.trim().is_empty() {
+                    cast.push(CastMember {
+                        name: entry.name,
+                        character: entry.character,
+                        profile_path: entry.profile_path,
+                    });
+                }
+            }
+
+            let mut seen_crew = HashSet::new();
+            for entry in c.crew {
+                let job_lower = entry.job.to_lowercase();
+                let dept_lower = entry.department.to_lowercase();
+                let is_key_crew = job_lower.contains("director")
+                    || job_lower.contains("writer")
+                    || job_lower.contains("screenplay")
+                    || job_lower.contains("story")
+                    || job_lower.contains("creator")
+                    || (dept_lower == "directing" && entry.job == "Director")
+                    || (dept_lower == "writing"
+                        && (entry.job == "Writer" || entry.job == "Screenplay"));
+
+                if is_key_crew
+                    && !entry.name.trim().is_empty()
+                    && seen_crew.insert((entry.name.clone(), entry.job.clone()))
+                {
+                    crew.push(CrewMember {
+                        name: entry.name,
+                        job: entry.job,
+                    });
+                    if crew.len() >= 6 {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if let Some(kw_val) = data.keywords {
+            let list_opt = kw_val
+                .get("keywords")
+                .or_else(|| kw_val.get("results"))
+                .and_then(|v| v.as_array());
+
+            if let Some(list) = list_opt {
+                for item in list.iter().take(10) {
+                    if let Some(name) = item
+                        .get("name")
+                        .and_then(|n| n.as_str())
+                        .map(str::trim)
+                        .filter(|s| !s.is_empty())
+                    {
+                        keywords.push(name.to_string());
+                    }
+                }
+            }
+        }
+
+        Ok(MediaCreditsAndKeywords {
+            cast,
+            crew,
+            keywords,
+        })
     }
 
     pub async fn discover_all(&self, min_date: &str, max_date: &str) -> Result<Vec<MediaItem>> {

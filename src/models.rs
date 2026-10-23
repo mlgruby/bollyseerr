@@ -113,3 +113,23 @@ pub struct RequestResult {
     pub message: String,
     pub via: String,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct MediaCreditsAndKeywords {
+    pub cast: Vec<CastMember>,
+    pub crew: Vec<CrewMember>,
+    pub keywords: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CastMember {
+    pub name: String,
+    pub character: String,
+    pub profile_path: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CrewMember {
+    pub name: String,
+    pub job: String,
+}

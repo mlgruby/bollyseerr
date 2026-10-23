@@ -160,8 +160,8 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
   </main>
 
   <!-- Details & Trailer Modal -->
-  <div id="detailModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target === this) closeModal()">
-    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl">
+  <div id="detailModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto" onclick="if(event.target === this) closeModal()">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
       <div id="modalContent"></div>
     </div>
   </div>
@@ -554,6 +554,25 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             ${(item.ott_providers || []).map(p => `<span class="px-2.5 py-0.5 rounded-full text-xs bg-indigo-950 text-indigo-300 border border-indigo-700/50">${p}</span>`).join('')}
           </div>
           <p class="text-sm text-gray-300 leading-relaxed">${item.overview || 'No synopsis available yet on TMDB.'}</p>
+
+          <!-- Crew Section -->
+          <div id="modalCrewSection" class="hidden space-y-1.5 pt-1 border-t border-gray-800/80">
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Key Crew</span>
+            <div id="modalCrewList" class="flex flex-wrap gap-2 text-xs"></div>
+          </div>
+
+          <!-- Cast Section -->
+          <div id="modalCastSection" class="hidden space-y-2 pt-1 border-t border-gray-800/80">
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Top Cast</span>
+            <div id="modalCastList" class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"></div>
+          </div>
+
+          <!-- Tags Section -->
+          <div id="modalTagsSection" class="hidden space-y-1.5 pt-1 border-t border-gray-800/80">
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Tags & Keywords</span>
+            <div id="modalTagList" class="flex flex-wrap gap-1.5 text-xs"></div>
+          </div>
+
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-800">
             <div class="flex items-center gap-2">
               ${trailerBtn}
@@ -566,6 +585,63 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         </div>
       `;
       modal.classList.remove('hidden');
+
+      // Fetch Cast, Crew and Tags asynchronously
+      fetch(`/api/details/${item.media_type}/${item.tmdb_id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(details => {
+          if (!details) return;
+
+          // Crew
+          if (details.crew && details.crew.length > 0) {
+            const crewList = document.getElementById('modalCrewList');
+            const crewSec = document.getElementById('modalCrewSection');
+            if (crewList && crewSec) {
+              crewList.innerHTML = details.crew.map(c =>
+                `<span class="px-2.5 py-1 rounded-lg bg-gray-800/90 border border-gray-700/60 text-gray-200">
+                  <strong class="text-indigo-400 font-semibold">${c.job}:</strong> ${c.name}
+                </span>`
+              ).join('');
+              crewSec.classList.remove('hidden');
+            }
+          }
+
+          // Cast
+          if (details.cast && details.cast.length > 0) {
+            const castList = document.getElementById('modalCastList');
+            const castSec = document.getElementById('modalCastSection');
+            if (castList && castSec) {
+              castList.innerHTML = details.cast.map(c => {
+                const photo = c.profile_path
+                  ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${c.name}" class="w-full h-full object-cover" />`
+                  : `<div class="w-full h-full flex items-center justify-center font-bold text-indigo-300 text-xs bg-indigo-950/80">${(c.name || '').split(' ').map(n=>n[0]).slice(0,2).join('')}</div>`;
+                return `
+                  <div class="flex-shrink-0 w-20 flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 border border-gray-700/80 mb-1 shadow-sm">
+                      ${photo}
+                    </div>
+                    <span class="text-[11px] font-semibold text-gray-200 line-clamp-1 w-full" title="${c.name}">${c.name}</span>
+                    <span class="text-[10px] text-gray-400 line-clamp-1 w-full" title="${c.character}">${c.character}</span>
+                  </div>
+                `;
+              }).join('');
+              castSec.classList.remove('hidden');
+            }
+          }
+
+          // Tags
+          if (details.keywords && details.keywords.length > 0) {
+            const tagList = document.getElementById('modalTagList');
+            const tagSec = document.getElementById('modalTagsSection');
+            if (tagList && tagSec) {
+              tagList.innerHTML = details.keywords.map(kw =>
+                `<span onclick="closeModal(); document.getElementById('searchInput').value='${kw}'; renderGrid();" class="px-2 py-0.5 rounded-md bg-gray-800/80 hover:bg-indigo-950/80 hover:text-indigo-300 hover:border-indigo-600/50 text-gray-300 text-[11px] border border-gray-700/50 transition cursor-pointer">#${kw}</span>`
+              ).join('');
+              tagSec.classList.remove('hidden');
+            }
+          }
+        })
+        .catch(e => console.warn('Details fetch error:', e));
     }
 
     function closeModal() {
