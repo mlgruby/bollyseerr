@@ -691,15 +691,38 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           <p class="text-sm text-gray-300 leading-relaxed">${item.overview || 'No synopsis available yet on TMDB.'}</p>
 
           <!-- Crew Section -->
-          <div id="modalCrewSection" class="hidden space-y-1.5 pt-1 border-t border-gray-800/80">
+          <div id="modalCrewSection" class="space-y-1.5 pt-1 border-t border-gray-800/80">
             <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Key Crew</span>
-            <div id="modalCrewList" class="flex flex-wrap gap-2 text-xs"></div>
+            <div id="modalCrewList" class="flex flex-wrap gap-2 text-xs">
+              <span class="px-2.5 py-1 rounded-lg bg-gray-800/50 text-gray-500 animate-pulse">Loading crew...</span>
+            </div>
           </div>
 
           <!-- Cast Section -->
-          <div id="modalCastSection" class="hidden space-y-2 pt-1 border-t border-gray-800/80">
+          <div id="modalCastSection" class="space-y-2 pt-1 border-t border-gray-800/80">
             <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Top Cast</span>
-            <div id="modalCastList" class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"></div>
+            <div id="modalCastList" class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
+                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
+                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              </div>
+              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
+                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
+                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              </div>
+              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
+                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
+                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              </div>
+              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
+                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
+                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              </div>
+            </div>
           </div>
 
           <!-- Tags Section -->
@@ -729,14 +752,17 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
       // Fetch Cast, Crew and Tags asynchronously
       fetch(`/api/details/${item.media_type}/${item.tmdb_id}`)
-        .then(r => r.ok ? r.json() : null)
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
         .then(details => {
           if (!details) return;
 
           // Crew
+          const crewList = document.getElementById('modalCrewList');
+          const crewSec = document.getElementById('modalCrewSection');
           if (details.crew && details.crew.length > 0) {
-            const crewList = document.getElementById('modalCrewList');
-            const crewSec = document.getElementById('modalCrewSection');
             if (crewList && crewSec) {
               crewList.innerHTML = details.crew.map(c =>
                 `<span class="px-2.5 py-1 rounded-lg bg-gray-800/90 border border-gray-700/60 text-gray-200">
@@ -745,12 +771,14 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
               ).join('');
               crewSec.classList.remove('hidden');
             }
+          } else if (crewSec) {
+            crewSec.classList.add('hidden');
           }
 
           // Cast
+          const castList = document.getElementById('modalCastList');
+          const castSec = document.getElementById('modalCastSection');
           if (details.cast && details.cast.length > 0) {
-            const castList = document.getElementById('modalCastList');
-            const castSec = document.getElementById('modalCastSection');
             if (castList && castSec) {
               castList.innerHTML = details.cast.map(c => {
                 const safeName = (c.name || 'Actor').replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -769,6 +797,8 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
               }).join('');
               castSec.classList.remove('hidden');
             }
+          } else if (castSec) {
+            castSec.classList.add('hidden');
           }
 
           // Tags
@@ -783,7 +813,17 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             }
           }
         })
-        .catch(e => console.warn('Details fetch error:', e));
+        .catch(e => {
+          console.warn('Details fetch error:', e);
+          const castList = document.getElementById('modalCastList');
+          if (castList) {
+            castList.innerHTML = `<span class="text-xs text-gray-400 py-1">Cast details currently unavailable from TMDB</span>`;
+          }
+          const crewSec = document.getElementById('modalCrewSection');
+          if (crewSec) {
+            crewSec.classList.add('hidden');
+          }
+        });
     }
 
     function closeModal() {

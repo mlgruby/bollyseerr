@@ -1,4 +1,4 @@
-use crate::models::{HomelabStatus, MediaItem, MediaType, SyncStatus};
+use crate::models::{HomelabStatus, MediaCreditsAndKeywords, MediaItem, MediaType, SyncStatus};
 use anyhow::{Context, Result};
 use chrono::Utc;
 use rusqlite::{Connection, OptionalExtension, params};
@@ -104,6 +104,14 @@ impl Database {
             CREATE TABLE IF NOT EXISTS sync_meta (
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS media_details (
+                tmdb_id INTEGER NOT NULL,
+                media_type TEXT NOT NULL,
+                data_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (tmdb_id, media_type)
             );",
         )?;
         Ok(())
@@ -407,6 +415,48 @@ impl Database {
             pruned_last_run,
             is_syncing,
         })
+    }
+
+    pub fn get_media_details(
+        &self,
+        media_type: &str,
+        tmdb_id: i64,
+    ) -> Result<Option<MediaCreditsAndKeywords>> {
+        let conn = self.conn.lock().expect("db mutex poisoned");
+        let mut stmt = conn.prepare(
+            "SELECT data_json FROM media_details WHERE tmdb_id = ?1 AND media_type = ?2 LIMIT 1",
+        )?;
+        let json_str: Option<String> = stmt
+            .query_row(params![tmdb_id, media_type], |row| row.get(0))
+            .optional()?;
+
+        match json_str {
+            Some(s) => {
+                let details = serde_json::from_str(&s)?;
+                Ok(Some(details))
+            }
+            None => Ok(None),
+        }
+    }
+
+    pub fn save_media_details(
+        &self,
+        media_type: &str,
+        tmdb_id: i64,
+        details: &MediaCreditsAndKeywords,
+    ) -> Result<()> {
+        let conn = self.conn.lock().expect("db mutex poisoned");
+        let json_str = serde_json::to_string(details)?;
+        let now = Utc::now().to_rfc3339();
+        conn.execute(
+            "INSERT INTO media_details (tmdb_id, media_type, data_json, updated_at)
+             VALUES (?1, ?2, ?3, ?4)
+             ON CONFLICT(tmdb_id, media_type) DO UPDATE SET
+                data_json = excluded.data_json,
+                updated_at = excluded.updated_at",
+            params![tmdb_id, media_type, json_str, now],
+        )?;
+        Ok(())
     }
 
     pub fn shrink_memory(&self) {
