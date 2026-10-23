@@ -8,7 +8,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -17,9 +17,9 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           fontFamily: { sans: ['Inter', 'sans-serif'] },
           colors: {
             seerr: {
-              bg: '#111827',
-              card: '#1f2937',
-              border: '#374151',
+              bg: '#080c14',
+              card: '#111827',
+              border: '#1f2937',
               accent: '#6366f1',
               accentHover: '#4f46e5'
             }
@@ -29,13 +29,13 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     };
   </script>
   <style>
-    body { background-color: #0b0f19; color: #f3f4f6; }
-    .poster-card { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease; }
-    .poster-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.7), 0 0 15px rgba(99, 102, 241, 0.25); }
+    body { background-color: #080c14; color: #f3f4f6; }
+    .poster-card { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease; }
+    .poster-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.8), 0 0 20px rgba(99, 102, 241, 0.25); border-color: rgba(99, 102, 241, 0.5); }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0b0f19; }
-    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    ::-webkit-scrollbar-track { background: #080c14; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
@@ -87,12 +87,13 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           <input
             id="searchInput"
             type="search"
-            placeholder="Search movies, series, OTT..."
-            class="w-full bg-gray-900/90 border border-gray-700/80 focus:border-indigo-500 rounded-xl pl-9 pr-3 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            placeholder="Search movies, series, cast, OTT..."
+            class="w-full bg-gray-900/90 border border-gray-700/80 focus:border-indigo-500 rounded-xl pl-9 pr-8 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
           />
           <svg class="w-4 h-4 text-gray-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
+          <span class="absolute right-2.5 top-2 text-[10px] text-gray-500 font-mono border border-gray-700/60 rounded px-1.5 py-0.5 pointer-events-none hidden sm:inline">/</span>
         </div>
 
         <button
@@ -133,7 +134,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         </button>
       </div>
 
-      <!-- Media Type & Language Filters -->
+      <!-- Media Type, Language, OTT Platform & Sort Filters -->
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex items-center gap-1 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
           <button onclick="setTypeFilter('all')" id="type-all" class="px-2.5 py-1 rounded-lg text-xs font-medium transition">All Types</button>
@@ -154,6 +155,15 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           <option value="JioHotstar">JioHotstar</option>
           <option value="SonyLIV">SonyLIV</option>
           <option value="ZEE5">ZEE5</option>
+          <option value="JioCinema">JioCinema</option>
+        </select>
+
+        <select id="sortFilter" onchange="renderGrid()" class="bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-indigo-500">
+          <option value="newest">Latest Releases</option>
+          <option value="rating">Top Rated (★)</option>
+          <option value="popular">Most Popular</option>
+          <option value="expiring">Expiring Soonest</option>
+          <option value="title">Title (A-Z)</option>
         </select>
       </div>
     </div>
@@ -161,6 +171,9 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
   <!-- Main Content -->
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Hero Spotlight Section -->
+    <div id="heroSpotlight" class="hidden mb-6"></div>
+
     <!-- Status Banner -->
     <div id="statusBar" class="mb-5 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400 bg-gray-900/60 border border-gray-800/80 rounded-xl px-4 py-2.5">
       <div class="flex items-center gap-2">
@@ -180,7 +193,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     </div>
   </main>
 
-  <!-- Details & Trailer Modal -->
+  <!-- Details & In-Modal Trailer Player Modal -->
   <div id="detailModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto" onclick="if(event.target === this) closeModal()">
     <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
       <div id="modalContent"></div>
@@ -228,9 +241,31 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     let syncMeta = {};
     let currentWindow = 'released';
     let currentType = 'all';
+    let heroIndex = 0;
+    let heroTimer = null;
+    let heroItems = [];
     const todayStr = new Date().toISOString().slice(0, 10);
 
-    document.getElementById('searchInput').addEventListener('input', () => renderGrid());
+    document.getElementById('searchInput').addEventListener('input', () => {
+      renderHeroSpotlight();
+      renderGrid();
+    });
+
+    // Keyboard Shortcuts: / to focus search, Esc to close modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== document.getElementById('searchInput')) {
+        e.preventDefault();
+        const s = document.getElementById('searchInput');
+        if (s) {
+          s.focus();
+          s.select();
+        }
+      }
+      if (e.key === 'Escape') {
+        closeModal();
+        closeDeleteModal();
+      }
+    });
 
     function showToast(msg, isError = false) {
       const t = document.getElementById('toast');
@@ -250,6 +285,33 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
              item.media_type === 'tv';
     }
 
+    function getOttBrandBadge(provider) {
+      const p = (provider || '').trim();
+      if (!p) return '';
+      if (/netflix/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E50914]/20 text-[#ff4d58] border border-[#E50914]/40 shadow-sm shadow-[#E50914]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#E50914]"></span>Netflix</span>`;
+      }
+      if (/prime|amazon/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#00A8E1]/20 text-[#38c9ff] border border-[#00A8E1]/40 shadow-sm shadow-[#00A8E1]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#00A8E1]"></span>Prime Video</span>`;
+      }
+      if (/hotstar|jiohotstar|disney/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#002D62]/40 text-[#40c4ff] border border-[#0052cc]/50 shadow-sm shadow-[#002D62]/30"><span class="w-1.5 h-1.5 rounded-full bg-[#00E5FF]"></span>Hotstar</span>`;
+      }
+      if (/sonyliv|sony/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FF6600]/20 text-[#ff944d] border border-[#FF6600]/40 shadow-sm shadow-[#FF6600]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#FF6600]"></span>SonyLIV</span>`;
+      }
+      if (/zee5|zee/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#8230C6]/20 text-[#c084fc] border border-[#8230C6]/40 shadow-sm shadow-[#8230C6]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#8230C6]"></span>ZEE5</span>`;
+      }
+      if (/jiocinema|jio/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E1193C]/20 text-[#ff4d6d] border border-[#E1193C]/40 shadow-sm shadow-[#E1193C]/20"><span class="w-1.5 h-1.5 rounded-full bg-[#E1193C]"></span>JioCinema</span>`;
+      }
+      if (/apple/i.test(p)) {
+        return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-800 text-zinc-200 border border-zinc-600 shadow-sm"> Apple TV+</span>`;
+      }
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-800/90 text-gray-300 border border-gray-700/60">📺 ${p}</span>`;
+    }
+
     function setWindowFilter(w) {
       currentWindow = w;
       ['released', 'in_theaters', 'on_ott', 'upcoming', 'library', 'all'].forEach(k => {
@@ -261,6 +323,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-gray-200 transition';
         }
       });
+      renderHeroSpotlight();
       renderGrid();
     }
 
@@ -274,6 +337,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           el.className = 'px-2.5 py-1 rounded-lg text-xs font-medium text-gray-400 hover:text-gray-200 transition';
         }
       });
+      renderHeroSpotlight();
       renderGrid();
     }
 
@@ -286,6 +350,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         allItems = await itemsResp.json();
         syncMeta = await statusResp.json();
         updateHeaderCounts();
+        renderHeroSpotlight();
         renderGrid();
       } catch (e) {
         console.error('Failed to load catalog:', e);
@@ -375,75 +440,180 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       </button>`;
     }
 
-    function levenshteinDistance(s1, s2) {
-      const m = s1.length, n = s2.length;
-      if (Math.abs(m - n) > 2) return 99;
-      const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-      for (let i = 0; i <= m; i++) dp[i][0] = i;
-      for (let j = 0; j <= n; j++) dp[0][j] = j;
-      for (let i = 1; i <= m; i++) {
-        for (let j = 1; j <= n; j++) {
-          const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
-          dp[i][j] = Math.min(
-            dp[i - 1][j] + 1,
-            dp[i][j - 1] + 1,
-            dp[i - 1][j - 1] + cost
-          );
-        }
-      }
-      return dp[m][n];
-    }
-
     function fuzzyMatch(haystack, needle) {
       if (!needle) return true;
       if (haystack.includes(needle)) return true;
       const words = haystack.split(/[\s:,\-_]+/);
-      for (const w of words) {
-        if (w.length >= 4 && Math.abs(w.length - needle.length) <= 2) {
-          if (levenshteinDistance(w, needle) <= 2) return true;
+      return words.some(w => w.startsWith(needle) || needle.startsWith(w));
+    }
+
+    // Hero Spotlight Carousel Logic
+    function startHeroTimer() {
+      if (heroTimer) clearInterval(heroTimer);
+      heroTimer = setInterval(() => {
+        if (heroItems.length > 1) {
+          heroIndex = (heroIndex + 1) % heroItems.length;
+          renderHeroSpotlight();
         }
+      }, 8000);
+    }
+
+    function pauseHeroTimer() {
+      if (heroTimer) clearInterval(heroTimer);
+    }
+
+    function setHeroIndex(idx) {
+      heroIndex = idx;
+      renderHeroSpotlight();
+      startHeroTimer();
+    }
+
+    function renderHeroSpotlight() {
+      const heroContainer = document.getElementById('heroSpotlight');
+      const q = (document.getElementById('searchInput')?.value || '').trim();
+      if (!heroContainer) return;
+
+      if (q || allItems.length === 0) {
+        heroContainer.classList.add('hidden');
+        pauseHeroTimer();
+        return;
       }
-      return false;
+
+      // Pick top 5 popular released blockbusters with backdrop images
+      heroItems = allItems
+        .filter(i => i.backdrop_path && i.vote_average > 0)
+        .sort((a, b) => (b.popularity * 0.7 + b.vote_average * 10) - (a.popularity * 0.7 + a.vote_average * 10))
+        .slice(0, 5);
+
+      if (heroItems.length === 0) {
+        heroContainer.classList.add('hidden');
+        return;
+      }
+
+      heroContainer.classList.remove('hidden');
+      if (heroIndex >= heroItems.length) heroIndex = 0;
+      const item = heroItems[heroIndex];
+
+      const backdropUrl = `https://image.tmdb.org/t/p/w1280${item.backdrop_path}`;
+      const safeTitle = (item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const year = (item.release_date || '').slice(0, 4);
+
+      const typeBadge = item.media_type === 'tv'
+        ? `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-pink-600/90 text-white shadow-sm">SERIES</span>`
+        : `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600/90 text-white shadow-sm">MOVIE</span>`;
+
+      const langTag = item.is_hindi_dub
+        ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-950/90 text-purple-200 border border-purple-700/50">Pan-India (${item.original_language.toUpperCase()})</span>`
+        : `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-900/90 text-gray-200 border border-gray-700/60">Hindi</span>`;
+
+      const ottBadges = (item.ott_providers || []).map(p => getOttBrandBadge(p)).join(' ');
+
+      const trailerBtn = item.trailer_key
+        ? `<button onclick="openModalWithTrailer(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-red-600/90 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95">
+             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+             Watch Trailer
+           </button>`
+        : '';
+
+      const dotsHtml = heroItems.map((_, idx) => `
+        <button onclick="setHeroIndex(${idx})" class="h-2 rounded-full transition-all cursor-pointer ${idx === heroIndex ? 'w-8 bg-indigo-500 shadow-md shadow-indigo-500/50' : 'w-2 bg-gray-600/70 hover:bg-gray-400'}" title="Go to spotlight ${idx + 1}"></button>
+      `).join('');
+
+      heroContainer.innerHTML = `
+        <div class="relative w-full rounded-3xl overflow-hidden border border-gray-800/90 bg-gray-950 shadow-2xl mb-8 group" onmouseenter="pauseHeroTimer()" onmouseleave="startHeroTimer()">
+          <!-- Ambient blurred glow backdrop -->
+          <div class="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-20 scale-110 pointer-events-none" style="background-image: url('${backdropUrl}')"></div>
+
+          <!-- Crisp hero banner -->
+          <div class="relative h-72 sm:h-96 md:h-[28rem] w-full overflow-hidden">
+            <img src="${backdropUrl}" alt="${safeTitle}" class="w-full h-full object-cover object-center transform group-hover:scale-102 transition duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-950/40 to-transparent"></div>
+
+            <!-- Spotlight Content -->
+            <div class="absolute bottom-6 sm:bottom-8 left-5 sm:left-8 right-5 sm:right-8 flex flex-col justify-end">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-amber-500 to-orange-500 text-gray-950 shadow">
+                  ★ Spotlight
+                </span>
+                ${typeBadge}
+                ${langTag}
+                ${item.vote_average > 0 ? `<span class="px-2 py-0.5 rounded-md text-xs font-bold bg-black/70 backdrop-blur-md text-amber-400 border border-amber-500/30">★ ${item.vote_average.toFixed(1)}</span>` : ''}
+                <span class="text-xs text-gray-400 font-medium">${year}</span>
+                ${ottBadges}
+              </div>
+
+              <h2 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-md line-clamp-2 max-w-3xl">
+                ${item.title}
+              </h2>
+
+              <p class="text-xs sm:text-sm text-gray-300 line-clamp-2 sm:line-clamp-3 max-w-2xl mt-2 drop-shadow leading-relaxed">
+                ${item.overview || 'Hindi cinema discovery on your private homelab.'}
+              </p>
+
+              <!-- Actions & Dots Row -->
+              <div class="flex flex-wrap items-center justify-between gap-4 mt-4 pt-2">
+                <div class="flex items-center gap-3 flex-wrap">
+                  ${trailerBtn}
+                  <button onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gray-800/90 hover:bg-gray-700 text-gray-100 border border-gray-700 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md">
+                    More Info
+                  </button>
+                  <div class="w-36">
+                    ${actionButtonHtml(item)}
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  ${dotsHtml}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function getFallbackArtHtml(title, mediaType) {
-      const isTv = mediaType === 'tv';
-      const cleanTitle = (title || 'Untitled').replace(/"/g, '&quot;');
-      return `<div class="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-indigo-950/90 via-slate-900 to-gray-950 text-center relative overflow-hidden group-hover:scale-105 transition duration-300">
-        <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#818cf8_1px,transparent_1px)] [background-size:12px_12px]"></div>
-        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center text-indigo-400 mb-3 shadow-lg shadow-indigo-950/50">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+      const icon = mediaType === 'tv'
+        ? `<svg class="w-12 h-12 text-indigo-400/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
+        : `<svg class="w-12 h-12 text-purple-400/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>`;
+      return `
+        <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-gray-900 via-indigo-950/40 to-gray-950 border border-gray-800/60 select-none">
+          ${icon}
+          <span class="text-xs font-bold text-gray-200 line-clamp-2 px-1">${title}</span>
+          <span class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider mt-1">${mediaType === 'tv' ? 'Web Series' : 'Movie'}</span>
         </div>
-        <span class="text-xs font-bold tracking-wider text-indigo-100 uppercase line-clamp-3 leading-snug drop-shadow px-1">${cleanTitle}</span>
-        <span class="text-[9px] font-semibold text-indigo-400/80 uppercase tracking-widest mt-2 px-2 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-800/40">${isTv ? 'WEB SERIES' : 'CINEMA'}</span>
-      </div>`;
+      `;
     }
 
     function getActorFallbackAvatar(name) {
-      const initials = (name || '').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
-      const gradients = [
-        'from-amber-600 to-orange-700 text-amber-100',
-        'from-rose-600 to-pink-700 text-rose-100',
-        'from-emerald-600 to-teal-700 text-emerald-100',
-        'from-indigo-600 to-purple-700 text-indigo-100',
-        'from-cyan-600 to-blue-700 text-cyan-100',
-      ];
-      let hash = 0;
-      for (let i = 0; i < (name || '').length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      const grad = gradients[Math.abs(hash) % gradients.length];
-      return `<div class="w-full h-full flex flex-col items-center justify-center font-bold text-xs bg-gradient-to-br ${grad} shadow-inner select-none">
-        <svg class="w-5 h-5 mb-0.5 opacity-70" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        <span class="text-[9px] tracking-wider leading-none font-extrabold">${initials}</span>
-      </div>`;
+      const initial = (name || 'A').trim().charAt(0).toUpperCase();
+      return `
+        <div class="w-full h-full flex items-center justify-center bg-indigo-950 text-indigo-300 font-bold text-base select-none">
+          ${initial}
+        </div>
+      `;
+    }
+
+    function filterByActor(actorName) {
+      closeModal();
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.value = actorName;
+        renderHeroSpotlight();
+        renderGrid();
+        searchInput.focus();
+        showToast(`🔍 Showing titles starring "${actorName}"`);
+      }
     }
 
     function renderGrid() {
-      const q = document.getElementById('searchInput').value.trim().toLowerCase();
-      const langMode = document.getElementById('langFilter').value;
-      const ottMode = document.getElementById('ottFilter').value;
+      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+      const langMode = document.getElementById('langFilter')?.value || 'all';
+      const ottMode = document.getElementById('ottFilter')?.value || 'all';
+      const sortMode = document.getElementById('sortFilter')?.value || 'newest';
 
-      let filtered = allItems.filter(item => {
-        // When searching with a query, search globally across all tabs
+      const filtered = allItems.filter(item => {
         if (!q) {
           if (currentWindow === 'released' && item.release_date > todayStr) return false;
           if (currentWindow === 'in_theaters' && (item.release_date > todayStr || item.media_type !== 'movie' || isItemOnOtt(item))) return false;
@@ -458,7 +628,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         if (ottMode !== 'all' && !(item.ott_providers || []).includes(ottMode)) return false;
 
         if (q) {
-          const hay = `${item.title} ${item.original_title} ${(item.genres || []).join(' ')} ${(item.ott_providers || []).join(' ')}`.toLowerCase();
+          const hay = `${item.title} ${item.original_title} ${(item.genres || []).join(' ')} ${(item.ott_providers || []).join(' ')} ${item.overview || ''}`.toLowerCase();
           if (!fuzzyMatch(hay, q)) return false;
         }
         return true;
@@ -472,10 +642,23 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           if (aExact !== bExact) return bExact - aExact;
           return b.popularity - a.popularity;
         });
-      } else if (currentWindow === 'upcoming') {
-        filtered.sort((a, b) => a.release_date.localeCompare(b.release_date));
       } else {
-        filtered.sort((a, b) => b.release_date.localeCompare(a.release_date));
+        if (sortMode === 'rating') {
+          filtered.sort((a, b) => b.vote_average - a.vote_average || b.popularity - a.popularity);
+        } else if (sortMode === 'popular') {
+          filtered.sort((a, b) => b.popularity - a.popularity);
+        } else if (sortMode === 'expiring') {
+          filtered.sort((a, b) => a.release_date.localeCompare(b.release_date));
+        } else if (sortMode === 'title') {
+          filtered.sort((a, b) => a.title.localeCompare(b.title));
+        } else {
+          // newest
+          if (currentWindow === 'upcoming') {
+            filtered.sort((a, b) => a.release_date.localeCompare(b.release_date));
+          } else {
+            filtered.sort((a, b) => b.release_date.localeCompare(a.release_date));
+          }
+        }
       }
 
       const grid = document.getElementById('mediaGrid');
@@ -512,9 +695,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-pink-600/90 text-white">SERIES</span>`
           : `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600/90 text-white">MOVIE</span>`;
 
-        const ottPills = (item.ott_providers || []).slice(0, 2).map(p =>
-          `<span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-950/90 text-indigo-300 border border-indigo-700/60">📺 ${p}</span>`
-        ).join(' ');
+        const ottPills = (item.ott_providers || []).slice(0, 2).map(p => getOttBrandBadge(p)).join(' ');
 
         let releaseModeTag = '';
         if (isUpcoming) {
@@ -526,6 +707,12 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/50">${item.release_type}</span>`
             : `<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-950/90 text-amber-300 border border-amber-700/50">🎬 ${item.release_type}</span>`;
         }
+
+        const ratingBadge = item.vote_average > 0
+          ? `<span class="bg-black/75 backdrop-blur-md px-1.5 py-0.5 rounded-md text-[11px] font-bold ${
+              item.vote_average >= 7.5 ? 'text-amber-400 border border-amber-500/30' : (item.vote_average >= 6.0 ? 'text-emerald-400 border border-emerald-500/30' : 'text-gray-300 border border-white/10')
+            }">★ ${item.vote_average.toFixed(1)}</span>`
+          : '';
 
         return `
           <div onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="poster-card group bg-gray-900/90 border border-gray-800/90 rounded-2xl overflow-hidden flex flex-col cursor-pointer">
@@ -541,7 +728,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
               </div>
               <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[11px] text-gray-200 font-medium">
                 <span class="bg-black/65 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/10">${item.release_date}</span>
-                ${item.vote_average > 0 ? `<span class="bg-black/65 backdrop-blur-sm px-1.5 py-0.5 rounded-md text-amber-400 font-semibold">★ ${item.vote_average.toFixed(1)}</span>` : ''}
+                ${ratingBadge}
               </div>
             </div>
 
@@ -653,40 +840,78 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       }
     }
 
-    function openModal(tmdbId, mediaType) {
+    function playTrailerInModal(key) {
+      const container = document.getElementById('trailerIframeContainer');
+      const iframe = document.getElementById('trailerIframe');
+      const overlay = document.getElementById('playTrailerOverlay');
+      if (container && iframe) {
+        iframe.src = `https://www.youtube-nocookie.com/embed/${key}?autoplay=1&rel=0&modestbranding=1`;
+        container.classList.remove('hidden');
+        if (overlay) overlay.classList.add('hidden');
+      }
+    }
+
+    function stopTrailerInModal() {
+      const container = document.getElementById('trailerIframeContainer');
+      const iframe = document.getElementById('trailerIframe');
+      const overlay = document.getElementById('playTrailerOverlay');
+      if (container && iframe) {
+        iframe.src = '';
+        container.classList.add('hidden');
+        if (overlay) overlay.classList.remove('hidden');
+      }
+    }
+
+    function openModalWithTrailer(tmdbId, mediaType) {
+      openModal(tmdbId, mediaType, true);
+    }
+
+    function openModal(tmdbId, mediaType, autoPlayTrailer = false) {
       const item = allItems.find(i => i.tmdb_id === tmdbId && i.media_type === mediaType);
       if (!item) return;
 
       const modal = document.getElementById('detailModal');
       const content = document.getElementById('modalContent');
       const backdrop = item.backdrop_path
-        ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
+        ? `https://image.tmdb.org/t/p/w1280${item.backdrop_path}`
         : (item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : '');
-
-      const trailerBtn = item.trailer_key
-        ? `<a href="https://www.youtube.com/watch?v=${item.trailer_key}" target="_blank" rel="noopener" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-600/90 hover:bg-red-500 text-white transition inline-flex items-center gap-1.5">▶ Watch Trailer</a>`
-        : '';
 
       const tmdbUrl = `https://www.themoviedb.org/${item.media_type}/${item.tmdb_id}`;
 
       content.innerHTML = `
-        <div class="relative h-48 sm:h-64 bg-gray-800">
-          ${backdrop ? `<img src="${backdrop}" class="w-full h-full object-cover opacity-60" />` : ''}
+        <div id="modalHeaderMedia" class="relative h-56 sm:h-72 bg-gray-950 overflow-hidden rounded-t-2xl">
+          ${backdrop ? `<img id="modalBackdropImg" src="${backdrop}" class="w-full h-full object-cover opacity-60 transition duration-300" />` : ''}
           <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"></div>
-          <button onclick="closeModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-gray-200 hover:bg-black flex items-center justify-center">✕</button>
-          <div class="absolute bottom-4 left-5 right-5">
-            <div class="flex items-center gap-2 mb-1">
+          <button onclick="closeModal()" class="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-black/70 hover:bg-black text-gray-200 flex items-center justify-center transition cursor-pointer">✕</button>
+
+          ${item.trailer_key ? `
+            <div id="playTrailerOverlay" class="absolute inset-0 z-20 flex items-center justify-center">
+              <button onclick="playTrailerInModal('${item.trailer_key}')" class="px-4 py-2.5 rounded-xl bg-red-600/90 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-2 shadow-2xl shadow-red-600/50 backdrop-blur-sm hover:scale-105 active:scale-95 transition cursor-pointer">
+                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                Play Trailer
+              </button>
+            </div>
+            <div id="trailerIframeContainer" class="hidden absolute inset-0 z-20 w-full h-full bg-black">
+              <iframe id="trailerIframe" src="" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              <button onclick="stopTrailerInModal()" class="absolute top-3 left-3 z-30 px-2.5 py-1 rounded-lg bg-black/80 hover:bg-black text-gray-200 text-xs font-semibold backdrop-blur-md flex items-center gap-1.5 transition cursor-pointer">✕ Close Video</button>
+            </div>
+          ` : ''}
+
+          <div class="absolute bottom-4 left-5 right-5 z-10 pointer-events-none">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-600 text-white">${item.release_type}</span>
               ${statusBadgeHtml(item)}
+              ${item.vote_average > 0 ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/70 backdrop-blur-md text-amber-400 border border-amber-500/30">★ ${item.vote_average.toFixed(1)}</span>` : ''}
             </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-white">${item.title}</h2>
-            <p class="text-xs text-gray-300 mt-0.5">Release Date: ${item.release_date} • Original Lang: ${item.original_language.toUpperCase()}</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">${item.title}</h2>
+            <p class="text-xs text-gray-300 mt-0.5">Release Date: ${item.release_date} • Original Lang: ${item.original_language.toUpperCase()}${item.season_count ? ` • ${item.season_count} Season${item.season_count > 1 ? 's' : ''}` : ''}</p>
           </div>
         </div>
+
         <div class="p-5 space-y-4">
           <div class="flex flex-wrap gap-1.5">
             ${(item.genres || []).map(g => `<span class="px-2.5 py-0.5 rounded-full text-xs bg-gray-800 text-gray-300 border border-gray-700">${g}</span>`).join('')}
-            ${(item.ott_providers || []).map(p => `<span class="px-2.5 py-0.5 rounded-full text-xs bg-indigo-950 text-indigo-300 border border-indigo-700/50">${p}</span>`).join('')}
+            ${(item.ott_providers || []).map(p => getOttBrandBadge(p)).join(' ')}
           </div>
           <p class="text-sm text-gray-300 leading-relaxed">${item.overview || 'No synopsis available yet on TMDB.'}</p>
 
@@ -700,7 +925,10 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
           <!-- Cast Section -->
           <div id="modalCastSection" class="space-y-2 pt-1 border-t border-gray-800/80">
-            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Top Cast</span>
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Top Cast</span>
+              <span class="text-[10px] text-gray-500">Click any actor to find their titles</span>
+            </div>
             <div id="modalCastList" class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
               <div class="flex-shrink-0 w-24 flex flex-col items-center text-center animate-pulse">
                 <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1.5"></div>
@@ -733,7 +961,12 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-800">
             <div class="flex items-center gap-2 flex-wrap">
-              ${trailerBtn}
+              ${item.trailer_key ? `
+                <button onclick="playTrailerInModal('${item.trailer_key}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-600/90 hover:bg-red-500 text-white transition inline-flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play Trailer
+                </button>
+                <a href="https://www.youtube.com/watch?v=${item.trailer_key}" target="_blank" rel="noopener" class="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 border border-gray-700 transition" title="Open on YouTube">YouTube ↗</a>
+              ` : ''}
               <a href="${tmdbUrl}" target="_blank" rel="noopener" class="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700">TMDB ↗</a>
               ${item.homelab_status !== 'unrequested' ? `
                 <button onclick="promptDeleteItem(${item.tmdb_id}, '${item.media_type}', '${(item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-600/15 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 transition inline-flex items-center gap-1.5 cursor-pointer">
@@ -749,6 +982,10 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         </div>
       `;
       modal.classList.remove('hidden');
+
+      if (autoPlayTrailer && item.trailer_key) {
+        setTimeout(() => playTrailerInModal(item.trailer_key), 100);
+      }
 
       // Fetch Cast, Crew and Tags asynchronously
       fetch(`/api/details/${item.media_type}/${item.tmdb_id}`)
@@ -786,12 +1023,12 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
                   ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${safeName}" class="w-full h-full object-cover" onerror="this.outerHTML = getActorFallbackAvatar('${safeName}')" />`
                   : getActorFallbackAvatar(c.name);
                 return `
-                  <div class="flex-shrink-0 w-24 flex flex-col items-center text-center">
-                    <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 border border-gray-700/80 mb-1.5 shadow-sm">
+                  <div onclick="filterByActor('${safeName}')" class="flex-shrink-0 w-24 flex flex-col items-center text-center cursor-pointer group/actor transition hover:scale-105" title="Filter titles starring ${safeName}">
+                    <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 border border-gray-700/80 mb-1.5 shadow-sm group-hover/actor:border-indigo-500 transition">
                       ${photo}
                     </div>
-                    <span class="text-[11px] font-semibold text-gray-200 line-clamp-2 leading-tight w-full" title="${c.name}">${c.name}</span>
-                    <span class="text-[10px] text-gray-400 line-clamp-2 leading-tight w-full mt-0.5" title="${c.character}">${c.character}</span>
+                    <span class="text-[11px] font-semibold text-gray-200 line-clamp-2 leading-tight w-full group-hover/actor:text-indigo-300 transition">${c.name}</span>
+                    <span class="text-[10px] text-gray-400 line-clamp-2 leading-tight w-full mt-0.5">${c.character}</span>
                   </div>
                 `;
               }).join('');
@@ -827,12 +1064,14 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     }
 
     function closeModal() {
+      stopTrailerInModal();
       document.getElementById('detailModal').classList.add('hidden');
     }
 
     setWindowFilter('released');
     setTypeFilter('all');
     fetchCatalog();
+    startHeroTimer();
     setInterval(fetchCatalog, 15000);
   </script>
 </body>
