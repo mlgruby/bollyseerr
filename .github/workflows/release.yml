@@ -48,7 +48,7 @@ jobs:
             type=raw,value=${{ steps.version.outputs.raw_version }}
             type=ref,event=branch
             type=raw,value=latest
-            type=sha,prefix={{branch}}-
+            type=sha
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
