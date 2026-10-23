@@ -182,8 +182,15 @@ async fn item_details_handler(
         }
     }
 
+    if let Ok(Some(details)) = state.db.get_media_details(&media_type, id) {
+        let mut cache = state.details_cache.write().await;
+        cache.insert(key, details.clone());
+        return Ok(Json(details));
+    }
+
     match state.tmdb.get_credits_and_keywords(&media_type, id).await {
         Ok(details) => {
+            let _ = state.db.save_media_details(&media_type, id, &details);
             let mut cache = state.details_cache.write().await;
             cache.insert(key, details.clone());
             Ok(Json(details))

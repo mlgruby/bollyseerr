@@ -298,14 +298,10 @@ impl TmdbClient {
         if let Some(c) = data.credits {
             for entry in c.cast.into_iter().take(12) {
                 if !entry.name.trim().is_empty() {
-                    let mut profile_path = entry.profile_path;
-                    if profile_path.is_none() {
-                        profile_path = self.lookup_person_photo(&entry.name).await.ok().flatten();
-                    }
                     cast.push(CastMember {
                         name: entry.name,
                         character: entry.character,
-                        profile_path,
+                        profile_path: entry.profile_path,
                     });
                 }
             }
