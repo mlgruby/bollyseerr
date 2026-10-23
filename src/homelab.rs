@@ -78,7 +78,10 @@ impl HomelabClient {
     pub fn new(config: Config) -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(15))
-            .user_agent("BollySeerr/0.1.0")
+            .pool_max_idle_per_host(1)
+            .pool_idle_timeout(Duration::from_secs(15))
+            .tcp_nodelay(true)
+            .user_agent("BollySeerr/0.1.1")
             .build()
             .expect("failed to build reqwest client");
         Self { client, config }

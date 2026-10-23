@@ -104,12 +104,11 @@ impl AgentState {
         // 2. Discover Movies and Web Series from TMDB
         let discovered = self.tmdb.discover_all(&min_date, &max_date).await?;
         info!(
-            "Upserting {} discovered movies & web series into SQLite",
+            "Upserting {} discovered movies & web series into SQLite (single transaction)",
             discovered.len()
         );
-        for item in &discovered {
-            self.db.upsert_item(item)?;
-        }
+        self.db.upsert_batch(&discovered)?;
+        drop(discovered);
 
         // Prune again in case any updated date moved before min_date
         let extra_pruned = self.db.prune_older_than(&min_date)?;
@@ -121,6 +120,7 @@ impl AgentState {
 
         // 3. Immediately run Homelab status sync so newly discovered items get their Radarr/Sonarr/Seerr badges
         self.run_status_sync().await?;
+        self.db.shrink_memory();
 
         info!("Discovery & status sync completed successfully");
         Ok(())

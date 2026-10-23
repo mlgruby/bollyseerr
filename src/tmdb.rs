@@ -215,7 +215,10 @@ impl TmdbClient {
     pub fn new(api_key: String, base_url: String, max_pages: u32) -> Self {
         let client = Client::builder()
             .timeout(Duration::from_secs(20))
-            .user_agent("BollySeerr/0.1.0")
+            .pool_max_idle_per_host(2)
+            .pool_idle_timeout(Duration::from_secs(30))
+            .tcp_nodelay(true)
+            .user_agent("BollySeerr/0.1.1")
             .build()
             .expect("failed to build reqwest client");
 

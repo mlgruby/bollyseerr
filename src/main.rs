@@ -8,7 +8,7 @@ use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
 
     let config = Config::from_env();
     info!(
-        "Starting BollySeerr on port {} (retention={}d, upcoming={}d)",
+        "Starting BollySeerr on port {} (single-threaded low-memory runtime, retention={}d, upcoming={}d)",
         config.port, config.retention_days, config.upcoming_days
     );
 
@@ -32,6 +32,13 @@ async fn main() -> Result<()> {
     let listener = TcpListener::bind(addr).await?;
     info!("BollySeerr HTTP server listening on http://{addr}");
 
-    axum::serve(listener, router).await?;
+    axum::serve(listener, router)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let _ = tokio::signal::ctrl_c().await;
+    info!("Shutdown signal received, exiting cleanly");
 }
