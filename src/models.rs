@@ -114,6 +114,22 @@ pub struct RequestResult {
     pub via: String,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct DeletePayload {
+    pub tmdb_id: i64,
+    pub media_type: MediaType,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct DeleteResult {
+    pub success: bool,
+    pub message: String,
+    pub radarr_deleted: bool,
+    pub sonarr_deleted: bool,
+    pub seerr_deleted: bool,
+    pub jellyfin_refreshed: bool,
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct MediaCreditsAndKeywords {
     pub cast: Vec<CastMember>,

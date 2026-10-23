@@ -248,6 +248,25 @@ impl Database {
         Ok(())
     }
 
+    pub fn reset_homelab_status(&self, tmdb_id: i64, media_type: MediaType) -> Result<()> {
+        let conn = self.conn.lock().expect("db mutex poisoned");
+        let now = Utc::now().to_rfc3339();
+        let mut stmt = conn.prepare_cached(
+            "UPDATE media_items
+             SET homelab_status = 'unrequested',
+                 radarr_id = NULL,
+                 sonarr_id = NULL,
+                 seerr_request_id = NULL,
+                 updated_at = ?1
+             WHERE tmdb_id = ?2 AND media_type = ?3",
+        )?;
+        stmt.execute(params![now, tmdb_id, media_type.as_str()])?;
+        drop(stmt);
+        drop(conn);
+        self.invalidate_cache();
+        Ok(())
+    }
+
     pub fn get_all_items(&self) -> Result<Vec<MediaItem>> {
         let conn = self.conn.lock().expect("db mutex poisoned");
         let mut stmt = conn.prepare_cached(

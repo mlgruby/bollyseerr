@@ -187,6 +187,39 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onclick="if(event.target === this) closeDeleteModal()">
+    <div class="bg-gray-900 border border-rose-900/60 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-left">
+      <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </div>
+      <h3 class="text-lg font-bold text-white mb-1.5">Remove from Homelab?</h3>
+      <p id="deleteConfirmText" class="text-sm text-gray-300 mb-4 leading-relaxed">
+        Are you sure you want to delete this item?
+      </p>
+      <div class="p-3 rounded-xl bg-rose-950/40 border border-rose-900/50 text-xs text-rose-200/90 mb-5 space-y-1">
+        <p class="font-semibold text-rose-200 flex items-center gap-1.5">
+          <span>⚠️</span> This action will:
+        </p>
+        <ul class="list-disc list-inside space-y-0.5 text-[11px] text-rose-300/80">
+          <li>Delete media files from Radarr/Sonarr storage</li>
+          <li>Remove media files so Jellyfin cleans up library</li>
+          <li>Cancel or delete the request from Jellyseerr</li>
+          <li>Reset status in BollySeerr to Unrequested</li>
+        </ul>
+      </div>
+      <div class="flex items-center justify-end gap-2.5">
+        <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition cursor-pointer">
+          Cancel
+        </button>
+        <button id="confirmDeleteBtn" onclick="executeDelete()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-900/40 transition cursor-pointer flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          Delete Media
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl shadow-xl border text-sm font-medium transition-all"></div>
 
@@ -313,14 +346,28 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
     function actionButtonHtml(item) {
       const st = item.homelab_status;
+      const safeTitle = (item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const trashBtn = `<button onclick="event.stopPropagation(); promptDeleteItem(${item.tmdb_id}, '${item.media_type}', '${safeTitle}')" title="Delete from Radarr/Sonarr & Jellyfin" class="px-2 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600/30 text-rose-300 hover:text-rose-100 border border-rose-500/30 transition cursor-pointer flex items-center justify-center shrink-0">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+      </button>`;
+
       if (st === 'available') {
-        return `<button disabled class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default">✓ In Library</button>`;
+        return `<div class="flex items-center gap-1.5">
+          <button disabled class="flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 cursor-default truncate">✓ In Library</button>
+          ${trashBtn}
+        </div>`;
       }
       if (st === 'partially_available') {
-        return `<button onclick="event.stopPropagation(); requestItem(${item.tmdb_id}, '${item.media_type}')" class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-teal-500/20 hover:bg-teal-500/30 text-teal-200 border border-teal-500/30 transition cursor-pointer">Request Remaining</button>`;
+        return `<div class="flex items-center gap-1.5">
+          <button onclick="event.stopPropagation(); requestItem(${item.tmdb_id}, '${item.media_type}')" class="flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-teal-500/20 hover:bg-teal-500/30 text-teal-200 border border-teal-500/30 transition cursor-pointer truncate">Request Rest</button>
+          ${trashBtn}
+        </div>`;
       }
       if (st === 'monitored' || st === 'requested') {
-        return `<button disabled class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 cursor-default">⏳ Requested</button>`;
+        return `<div class="flex items-center gap-1.5">
+          <button disabled class="flex-1 py-1.5 px-2.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 cursor-default truncate">⏳ Requested</button>
+          ${trashBtn}
+        </div>`;
       }
       return `<button id="req-btn-${item.media_type}-${item.tmdb_id}" onclick="event.stopPropagation(); requestItem(${item.tmdb_id}, '${item.media_type}')" class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/30 transition cursor-pointer flex items-center justify-center gap-1">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
@@ -557,6 +604,55 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       }
     }
 
+    let pendingDelete = null;
+
+    function promptDeleteItem(tmdbId, mediaType, title) {
+      pendingDelete = { tmdbId, mediaType, title };
+      const textEl = document.getElementById('deleteConfirmText');
+      if (textEl) {
+        textEl.innerHTML = `Are you sure you want to delete <strong class="text-white">${title}</strong>?`;
+      }
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.add('hidden');
+      pendingDelete = null;
+    }
+
+    async function executeDelete() {
+      if (!pendingDelete) return;
+      const { tmdbId, mediaType, title } = pendingDelete;
+      const btn = document.getElementById('confirmDeleteBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Deleting...';
+      }
+
+      try {
+        const resp = await fetch('/api/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tmdb_id: tmdbId, media_type: mediaType })
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.success) {
+          throw new Error(data.message || 'Deletion failed');
+        }
+        closeDeleteModal();
+        closeModal();
+        showToast(`✓ Deleted "${title}" from Radarr/Sonarr & Jellyfin`);
+        await fetchCatalog();
+      } catch (err) {
+        showToast(`✗ ${err.message}`, true);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Delete Media`;
+        }
+      }
+    }
+
     function openModal(tmdbId, mediaType) {
       const item = allItems.find(i => i.tmdb_id === tmdbId && i.media_type === mediaType);
       if (!item) return;
@@ -612,12 +708,18 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             <div id="modalTagList" class="flex flex-wrap gap-1.5 text-xs"></div>
           </div>
 
-          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-800">
-            <div class="flex items-center gap-2">
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-800">
+            <div class="flex items-center gap-2 flex-wrap">
               ${trailerBtn}
               <a href="${tmdbUrl}" target="_blank" rel="noopener" class="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700">TMDB ↗</a>
+              ${item.homelab_status !== 'unrequested' ? `
+                <button onclick="promptDeleteItem(${item.tmdb_id}, '${item.media_type}', '${(item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-600/15 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 transition inline-flex items-center gap-1.5 cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  Delete from Homelab
+                </button>
+              ` : ''}
             </div>
-            <div class="w-44" onclick="closeModal()">
+            <div class="w-48">
               ${actionButtonHtml(item)}
             </div>
           </div>
