@@ -702,25 +702,25 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           <div id="modalCastSection" class="space-y-2 pt-1 border-t border-gray-800/80">
             <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Top Cast</span>
             <div id="modalCastList" class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
-                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
-                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
-                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              <div class="flex-shrink-0 w-24 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1.5"></div>
+                <div class="w-16 h-2.5 bg-gray-800 rounded mb-1"></div>
+                <div class="w-12 h-2 bg-gray-800/60 rounded"></div>
               </div>
-              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
-                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
-                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
-                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              <div class="flex-shrink-0 w-24 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1.5"></div>
+                <div class="w-16 h-2.5 bg-gray-800 rounded mb-1"></div>
+                <div class="w-12 h-2 bg-gray-800/60 rounded"></div>
               </div>
-              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
-                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
-                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
-                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              <div class="flex-shrink-0 w-24 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1.5"></div>
+                <div class="w-16 h-2.5 bg-gray-800 rounded mb-1"></div>
+                <div class="w-12 h-2 bg-gray-800/60 rounded"></div>
               </div>
-              <div class="flex-shrink-0 w-20 flex flex-col items-center text-center animate-pulse">
-                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1"></div>
-                <div class="w-14 h-2 bg-gray-800 rounded mb-1"></div>
-                <div class="w-10 h-2 bg-gray-800/60 rounded"></div>
+              <div class="flex-shrink-0 w-24 flex flex-col items-center text-center animate-pulse">
+                <div class="w-14 h-14 rounded-full bg-gray-800/70 border border-gray-700/50 mb-1.5"></div>
+                <div class="w-16 h-2.5 bg-gray-800 rounded mb-1"></div>
+                <div class="w-12 h-2 bg-gray-800/60 rounded"></div>
               </div>
             </div>
           </div>
@@ -786,12 +786,12 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
                   ? `<img src="https://image.tmdb.org/t/p/w185${c.profile_path}" alt="${safeName}" class="w-full h-full object-cover" onerror="this.outerHTML = getActorFallbackAvatar('${safeName}')" />`
                   : getActorFallbackAvatar(c.name);
                 return `
-                  <div class="flex-shrink-0 w-20 flex flex-col items-center text-center">
-                    <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 border border-gray-700/80 mb-1 shadow-sm">
+                  <div class="flex-shrink-0 w-24 flex flex-col items-center text-center">
+                    <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 border border-gray-700/80 mb-1.5 shadow-sm">
                       ${photo}
                     </div>
-                    <span class="text-[11px] font-semibold text-gray-200 line-clamp-1 w-full" title="${c.name}">${c.name}</span>
-                    <span class="text-[10px] text-gray-400 line-clamp-1 w-full" title="${c.character}">${c.character}</span>
+                    <span class="text-[11px] font-semibold text-gray-200 line-clamp-2 leading-tight w-full" title="${c.name}">${c.name}</span>
+                    <span class="text-[10px] text-gray-400 line-clamp-2 leading-tight w-full mt-0.5" title="${c.character}">${c.character}</span>
                   </div>
                 `;
               }).join('');
