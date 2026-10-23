@@ -338,6 +338,19 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       return false;
     }
 
+    function getFallbackArtHtml(title, mediaType) {
+      const isTv = mediaType === 'tv';
+      const cleanTitle = (title || 'Untitled').replace(/"/g, '&quot;');
+      return `<div class="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-indigo-950/90 via-slate-900 to-gray-950 text-center relative overflow-hidden group-hover:scale-105 transition duration-300">
+        <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#818cf8_1px,transparent_1px)] [background-size:12px_12px]"></div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center text-indigo-400 mb-3 shadow-lg shadow-indigo-950/50">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+        </div>
+        <span class="text-xs font-bold tracking-wider text-indigo-100 uppercase line-clamp-3 leading-snug drop-shadow px-1">${cleanTitle}</span>
+        <span class="text-[9px] font-semibold text-indigo-400/80 uppercase tracking-widest mt-2 px-2 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-800/40">${isTv ? 'WEB SERIES' : 'CINEMA'}</span>
+      </div>`;
+    }
+
     function renderGrid() {
       const q = document.getElementById('searchInput').value.trim().toLowerCase();
       const langMode = document.getElementById('langFilter').value;
@@ -390,9 +403,10 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       empty.classList.add('hidden');
 
       grid.innerHTML = filtered.map(item => {
-        const posterUrl = item.poster_path
-          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-          : 'https://via.placeholder.com/500x750/1f2937/9ca3af?text=No+Poster';
+        const posterPath = item.poster_path || item.backdrop_path;
+        const posterArtHtml = posterPath
+          ? `<img src="https://image.tmdb.org/t/p/w500${posterPath}" alt="${item.title.replace(/"/g, '&quot;')}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.outerHTML = getFallbackArtHtml('${item.title.replace(/'/g, "\\'")}', '${item.media_type}')" />`
+          : getFallbackArtHtml(item.title, item.media_type);
 
         const diff = daysDifference(item.release_date);
         const isUpcoming = item.release_date > todayStr;
@@ -429,8 +443,8 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
         return `
           <div onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="poster-card group bg-gray-900/90 border border-gray-800/90 rounded-2xl overflow-hidden flex flex-col cursor-pointer">
-            <div class="relative aspect-[2/3] bg-gray-800 overflow-hidden">
-              <img src="${posterUrl}" alt="${item.title.replace(/"/g, '&quot;')}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            <div class="relative aspect-[2/3] bg-gray-950 overflow-hidden">
+              ${posterArtHtml}
               <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-black/40"></div>
               <div class="absolute top-2 left-2 flex flex-wrap gap-1">
                 ${typeBadge}
