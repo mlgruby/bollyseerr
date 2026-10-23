@@ -232,23 +232,50 @@ impl TmdbClient {
 
     pub async fn discover_all(&self, min_date: &str, max_date: &str) -> Result<Vec<MediaItem>> {
         let mut items = Vec::new();
+        let today = Utc::now().format("%Y-%m-%d").to_string();
 
-        // 1. Discover original Hindi movies
+        // 1a. Discover original Hindi movies by date
         match self
-            .discover_movies_by_lang("hi", false, min_date, max_date, 0)
+            .discover_movies_by_lang(
+                "hi",
+                false,
+                min_date,
+                max_date,
+                0,
+                "primary_release_date.desc",
+            )
             .await
         {
             Ok(movies) => {
-                info!("Discovered {} original Hindi movies", movies.len());
+                info!("Discovered {} original Hindi movies by date", movies.len());
                 items.extend(movies);
             }
-            Err(e) => warn!("Failed to discover Hindi movies: {e:#}"),
+            Err(e) => warn!("Failed to discover Hindi movies by date: {e:#}"),
+        }
+
+        // 1b. Discover highly anticipated & popular upcoming Hindi movies (e.g. Ramayana Part 1 & 2, King, etc.)
+        match self
+            .discover_movies_by_lang("hi", false, &today, max_date, 0, "popularity.desc")
+            .await
+        {
+            Ok(movies) => {
+                info!("Discovered {} popular upcoming Hindi movies", movies.len());
+                items.extend(movies);
+            }
+            Err(e) => warn!("Failed to discover popular upcoming Hindi movies: {e:#}"),
         }
 
         // 2. Discover Pan-India movies (Telugu, Tamil, Kannada, Malayalam) that also release in Hindi
         for lang in ["te", "ta", "kn", "ml"] {
             match self
-                .discover_movies_by_lang(lang, true, min_date, max_date, 5)
+                .discover_movies_by_lang(
+                    lang,
+                    true,
+                    min_date,
+                    max_date,
+                    5,
+                    "primary_release_date.desc",
+                )
                 .await
             {
                 Ok(pan_movies) => {
@@ -259,6 +286,19 @@ impl TmdbClient {
                     items.extend(pan_movies);
                 }
                 Err(e) => warn!("Failed to discover Pan-India ({lang}) movies: {e:#}"),
+            }
+
+            // Also check popular upcoming Pan-India movies
+            match self
+                .discover_movies_by_lang(lang, true, &today, max_date, 0, "popularity.desc")
+                .await
+            {
+                Ok(pan_movies) => {
+                    items.extend(pan_movies);
+                }
+                Err(e) => {
+                    warn!("Failed to discover popular upcoming Pan-India ({lang}) movies: {e:#}")
+                }
             }
         }
 
@@ -309,6 +349,7 @@ impl TmdbClient {
         min_date: &str,
         max_date: &str,
         min_votes: i64,
+        sort_by: &str,
     ) -> Result<Vec<MediaItem>> {
         let mut basics = Vec::new();
         let max_pages = if require_hindi_translation {
@@ -328,7 +369,7 @@ impl TmdbClient {
                 ("with_original_language", lang),
                 ("primary_release_date.gte", min_date),
                 ("primary_release_date.lte", max_date),
-                ("sort_by", "primary_release_date.desc"),
+                ("sort_by", sort_by),
                 ("page", page_str.as_str()),
             ];
             if min_votes > 0 {
