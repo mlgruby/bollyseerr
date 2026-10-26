@@ -17,6 +17,7 @@ RUN mkdir src && \
     rm -rf src
 
 COPY src ./src
+COPY assets ./assets
 COPY tests ./tests
 
 RUN touch src/lib.rs src/main.rs && \
