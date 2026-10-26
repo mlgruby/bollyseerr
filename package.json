@@ -1,0 +1,10 @@
+{
+  "name": "bollyseerr-styles",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./frontend/input.css -o ./assets/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

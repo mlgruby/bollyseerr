@@ -1,33 +1,17 @@
-pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
+pub const INDEX_HTML: &str = concat!(
+    r##"<!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BollySeerr — Hindi & Bollywood Discovery</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%230f172a'/%3E%3Cpath d='M116 130 L136 130 L106 176 L86 176 Z' fill='%23FF9933'/%3E%3Cpath d='M166 130 L186 130 L156 176 L136 176 Z' fill='%23FFFFFF'/%3E%3Cpath d='M216 130 L236 130 L206 176 L186 176 Z' fill='%2310B981'/%3E%3Cpolygon points='256,220 268,255 305,255 275,277 286,312 256,290 226,312 237,277 207,255 244,255' fill='%23F59E0B' stroke='%23FEF08A' stroke-width='4'/%3E%3C/svg%3E">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <style>"##,
+    include_str!("../assets/tailwind.css"),
+    r##"</style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'sans-serif'] },
-          colors: {
-            seerr: {
-              bg: '#080c14',
-              card: '#111827',
-              border: '#1f2937',
-              accent: '#6366f1',
-              accentHover: '#4f46e5'
-            }
-          }
-        }
-      }
-    };
-  </script>
   <style>
     body { background-color: #080c14; color: #f3f4f6; }
     .poster-card { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease; }
@@ -44,7 +28,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-indigo-950/80 border border-amber-500/30 flex items-center justify-center shadow-lg shadow-amber-500/10 p-1.5 overflow-hidden">
-          <svg viewBox="0 0 512 512" class="w-full h-full drop-shadow">
+          <svg width="24" height="24" viewBox="0 0 512 512" class="w-full h-full drop-shadow">
             <g transform="translate(256, 260) rotate(-6)">
               <rect x="-140" y="-75" width="280" height="190" rx="18" fill="#18181b" stroke="#3f3f46" stroke-width="4"/>
               <g transform="translate(-140, -130) rotate(-14, 0, 45)">
@@ -90,7 +74,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             placeholder="Search movies, series, cast, OTT..."
             class="w-full bg-gray-900/90 border border-gray-700/80 focus:border-indigo-500 rounded-xl pl-9 pr-8 py-1.5 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
           />
-          <svg class="w-4 h-4 text-gray-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="24" height="24" class="w-4 h-4 text-gray-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
           <span class="absolute right-2.5 top-2 text-[10px] text-gray-500 font-mono border border-gray-700/60 rounded px-1.5 py-0.5 pointer-events-none hidden sm:inline">/</span>
@@ -102,7 +86,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 transition cursor-pointer shrink-0"
           title="Trigger TMDB Discovery & Homelab Status Sync"
         >
-          <svg id="syncIcon" class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="24" height="24" id="syncIcon" class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
           <span id="syncBtnText">Sync Now</span>
@@ -204,7 +188,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
   <div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onclick="if(event.target === this) closeDeleteModal()">
     <div class="bg-gray-900 border border-rose-900/60 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-left">
       <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mb-4">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        <svg width="24" height="24" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
       </div>
       <h3 class="text-lg font-bold text-white mb-1.5">Remove from Homelab?</h3>
       <p id="deleteConfirmText" class="text-sm text-gray-300 mb-4 leading-relaxed">
@@ -226,7 +210,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           Cancel
         </button>
         <button id="confirmDeleteBtn" onclick="executeDelete()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-900/40 transition cursor-pointer flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          <svg width="24" height="24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           Delete Media
         </button>
       </div>
@@ -413,7 +397,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       const st = item.homelab_status;
       const safeTitle = (item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
       const trashBtn = `<button onclick="event.stopPropagation(); promptDeleteItem(${item.tmdb_id}, '${item.media_type}', '${safeTitle}')" title="Delete from Radarr/Sonarr & Jellyfin" class="px-2 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-600/30 text-rose-300 hover:text-rose-100 border border-rose-500/30 transition cursor-pointer flex items-center justify-center shrink-0">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        <svg width="24" height="24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
       </button>`;
 
       if (st === 'available') {
@@ -435,7 +419,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
         </div>`;
       }
       return `<button id="req-btn-${item.media_type}-${item.tmdb_id}" onclick="event.stopPropagation(); requestItem(${item.tmdb_id}, '${item.media_type}')" class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/30 transition cursor-pointer flex items-center justify-center gap-1">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        <svg width="24" height="24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
         Request
       </button>`;
     }
@@ -510,7 +494,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
       const trailerBtn = item.trailer_key
         ? `<button onclick="openModalWithTrailer(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-red-600/90 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95">
-             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+             <svg width="24" height="24" class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
              Watch Trailer
            </button>`
         : '';
@@ -575,8 +559,8 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
 
     function getFallbackArtHtml(title, mediaType) {
       const icon = mediaType === 'tv'
-        ? `<svg class="w-12 h-12 text-indigo-400/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
-        : `<svg class="w-12 h-12 text-purple-400/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>`;
+        ? `<svg width="24" height="24" class="w-12 h-12 text-indigo-400/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
+        : `<svg width="24" height="24" class="w-12 h-12 text-purple-400/80 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>`;
       return `
         <div class="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-gray-900 via-indigo-950/40 to-gray-950 border border-gray-800/60 select-none">
           ${icon}
@@ -835,7 +819,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Delete Media`;
+          btn.innerHTML = `<svg width="24" height="24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Delete Media`;
         }
       }
     }
@@ -887,7 +871,7 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
           ${item.trailer_key ? `
             <div id="playTrailerOverlay" class="absolute inset-0 z-20 flex items-center justify-center">
               <button onclick="playTrailerInModal('${item.trailer_key}')" class="px-4 py-2.5 rounded-xl bg-red-600/90 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-2 shadow-2xl shadow-red-600/50 backdrop-blur-sm hover:scale-105 active:scale-95 transition cursor-pointer">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg width="24" height="24" class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 Play Trailer
               </button>
             </div>
@@ -963,14 +947,14 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
             <div class="flex items-center gap-2 flex-wrap">
               ${item.trailer_key ? `
                 <button onclick="playTrailerInModal('${item.trailer_key}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-600/90 hover:bg-red-500 text-white transition inline-flex items-center gap-1.5 cursor-pointer">
-                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play Trailer
+                  <svg width="24" height="24" class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Play Trailer
                 </button>
                 <a href="https://www.youtube.com/watch?v=${item.trailer_key}" target="_blank" rel="noopener" class="px-2.5 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-gray-200 border border-gray-700 transition" title="Open on YouTube">YouTube ↗</a>
               ` : ''}
               <a href="${tmdbUrl}" target="_blank" rel="noopener" class="px-3 py-2 rounded-xl text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700">TMDB ↗</a>
               ${item.homelab_status !== 'unrequested' ? `
                 <button onclick="promptDeleteItem(${item.tmdb_id}, '${item.media_type}', '${(item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" class="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-600/15 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 transition inline-flex items-center gap-1.5 cursor-pointer">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  <svg width="24" height="24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   Delete from Homelab
                 </button>
               ` : ''}
@@ -1076,4 +1060,21 @@ pub const INDEX_HTML: &str = r##"<!DOCTYPE html>
   </script>
 </body>
 </html>
-"##;
+"##
+);
+
+#[cfg(test)]
+mod tests {
+    use super::INDEX_HTML;
+
+    #[test]
+    fn layout_styles_are_embedded_without_the_runtime_cdn() {
+        assert!(!INDEX_HTML.contains("cdn.tailwindcss.com"));
+        assert!(!INDEX_HTML.contains("tailwind.config"));
+        assert!(INDEX_HTML.contains(".hidden{display:none}"));
+        assert!(INDEX_HTML.contains(".w-4{width:1rem}"));
+        assert!(INDEX_HTML.contains(".h-4{height:1rem}"));
+        assert!(INDEX_HTML.contains("sm\\:grid-cols-3"));
+        assert!(INDEX_HTML.contains("<svg width=\"24\" height=\"24\""));
+    }
+}
