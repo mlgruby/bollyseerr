@@ -98,22 +98,28 @@ pub const INDEX_HTML: &str = concat!(
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3 flex flex-wrap items-center justify-between gap-3 border-t border-gray-900/80 pt-2.5">
       <!-- Window Tabs -->
       <div class="flex flex-wrap items-center gap-1.5 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
-        <button onclick="setWindowFilter('released')" id="tab-released" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <button onclick="setWindowFilter('released')" id="tab-released" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
           Released (Last 5M) <span id="count-released" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
         </button>
-        <button onclick="setWindowFilter('in_theaters')" id="tab-in_theaters" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <button onclick="setWindowFilter('in_theaters')" id="tab-in_theaters" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
           🎬 In Theaters <span id="count-in_theaters" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
         </button>
-        <button onclick="setWindowFilter('on_ott')" id="tab-on_ott" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <button onclick="setWindowFilter('on_ott')" id="tab-on_ott" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
           📺 Now on OTT <span id="count-on_ott" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
         </button>
-        <button onclick="setWindowFilter('upcoming')" id="tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <button onclick="setWindowFilter('upcoming')" id="tab-upcoming" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
           Upcoming <span id="count-upcoming" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
         </button>
-        <button onclick="setWindowFilter('library')" id="tab-library" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <button onclick="setWindowFilter('upcoming_theaters')" id="tab-upcoming_theaters" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
+          🎬 Upcoming Theaters <span id="count-upcoming_theaters" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
+        </button>
+        <button onclick="setWindowFilter('upcoming_ott')" id="tab-upcoming_ott" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
+          📺 Upcoming OTT <span id="count-upcoming_ott" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
+        </button>
+        <button onclick="setWindowFilter('library')" id="tab-library" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
           Requested / Library <span id="count-library" class="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-gray-800 text-gray-300">0</span>
         </button>
-        <button onclick="setWindowFilter('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <button onclick="setWindowFilter('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
           All
         </button>
       </div>
@@ -121,19 +127,21 @@ pub const INDEX_HTML: &str = concat!(
       <!-- Media Type, Language, OTT Platform & Sort Filters -->
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex items-center gap-1 bg-gray-900/90 p-1 rounded-xl border border-gray-800">
-          <button onclick="setTypeFilter('all')" id="type-all" class="px-2.5 py-1 rounded-lg text-xs font-medium transition">All Types</button>
-          <button onclick="setTypeFilter('movie')" id="type-movie" class="px-2.5 py-1 rounded-lg text-xs font-medium transition">Movies</button>
-          <button onclick="setTypeFilter('tv')" id="type-tv" class="px-2.5 py-1 rounded-lg text-xs font-medium transition">Web Series</button>
+          <button onclick="setTypeFilter('all')" id="type-all" class="px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer">All Types</button>
+          <button onclick="setTypeFilter('movie')" id="type-movie" class="px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer">Movies</button>
+          <button onclick="setTypeFilter('tv')" id="type-tv" class="px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer">Web Series</button>
         </div>
 
-        <select id="langFilter" onchange="renderGrid()" class="bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-indigo-500">
+        <select id="langFilter" onchange="renderGrid()" class="bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
           <option value="all">Hindi + Pan-India Dub</option>
           <option value="hi">Original Hindi Only</option>
           <option value="dub">Pan-India (Hindi Dub)</option>
         </select>
 
-        <select id="ottFilter" onchange="renderGrid()" class="bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-indigo-500">
+        <select id="ottFilter" onchange="renderGrid()" class="bg-gray-900 border border-gray-800 rounded-xl px-2.5 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
           <option value="all">All Platforms / Theatrical</option>
+          <option value="theatrical">🎬 Theatrical Only</option>
+          <option value="ott">📺 All OTT Platforms</option>
           <option value="Netflix">Netflix</option>
           <option value="Prime Video">Prime Video</option>
           <option value="JioHotstar">JioHotstar</option>
@@ -228,6 +236,7 @@ pub const INDEX_HTML: &str = concat!(
     let heroIndex = 0;
     let heroTimer = null;
     let heroItems = [];
+    let heroRenderedIds = '';
     const todayStr = new Date().toISOString().slice(0, 10);
 
     document.getElementById('searchInput').addEventListener('input', () => {
@@ -298,16 +307,15 @@ pub const INDEX_HTML: &str = concat!(
 
     function setWindowFilter(w) {
       currentWindow = w;
-      ['released', 'in_theaters', 'on_ott', 'upcoming', 'library', 'all'].forEach(k => {
+      ['released', 'in_theaters', 'on_ott', 'upcoming', 'upcoming_theaters', 'upcoming_ott', 'library', 'all'].forEach(k => {
         const el = document.getElementById(`tab-${k}`);
         if (!el) return;
         if (k === w) {
-          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow transition';
+          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow transition cursor-pointer';
         } else {
-          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-gray-200 transition';
+          el.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-400 hover:text-gray-200 transition cursor-pointer';
         }
       });
-      renderHeroSpotlight();
       renderGrid();
     }
 
@@ -346,10 +354,18 @@ pub const INDEX_HTML: &str = concat!(
       const inTheatersCount = releasedItems.filter(i => i.media_type === 'movie' && !isItemOnOtt(i)).length;
       const onOttCount = releasedItems.filter(i => isItemOnOtt(i)).length;
 
+      const upcomingItems = allItems.filter(i => i.release_date > todayStr);
+      const upcomingTheatersCount = upcomingItems.filter(i => i.media_type === 'movie' && !isItemOnOtt(i)).length;
+      const upcomingOttCount = upcomingItems.filter(i => isItemOnOtt(i)).length;
+
       document.getElementById('count-released').textContent = syncMeta.released_count ?? releasedItems.length;
       document.getElementById('count-in_theaters').textContent = inTheatersCount;
       document.getElementById('count-on_ott').textContent = onOttCount;
-      document.getElementById('count-upcoming').textContent = syncMeta.upcoming_count ?? 0;
+      document.getElementById('count-upcoming').textContent = syncMeta.upcoming_count ?? upcomingItems.length;
+      const elUpTheaters = document.getElementById('count-upcoming_theaters');
+      if (elUpTheaters) elUpTheaters.textContent = upcomingTheatersCount;
+      const elUpOtt = document.getElementById('count-upcoming_ott');
+      if (elUpOtt) elUpOtt.textContent = upcomingOttCount;
       document.getElementById('count-library').textContent = syncMeta.library_or_requested_count ?? 0;
 
       const summary = `${syncMeta.total_movies || 0} Movies • ${syncMeta.total_series || 0} Web Series (Rolling 5-Month / 150-Day Window + Upcoming • Auto-pruned: ${syncMeta.pruned_last_run || 0})`;
@@ -436,19 +452,68 @@ pub const INDEX_HTML: &str = concat!(
       if (heroTimer) clearInterval(heroTimer);
       heroTimer = setInterval(() => {
         if (heroItems.length > 1) {
-          heroIndex = (heroIndex + 1) % heroItems.length;
-          renderHeroSpotlight();
+          nextHeroSlide();
         }
-      }, 8000);
+      }, 7000);
     }
 
     function pauseHeroTimer() {
       if (heroTimer) clearInterval(heroTimer);
     }
 
+    function prevHeroSlide() {
+      if (!heroItems.length) return;
+      setHeroIndex((heroIndex - 1 + heroItems.length) % heroItems.length);
+    }
+
+    function nextHeroSlide() {
+      if (!heroItems.length) return;
+      setHeroIndex((heroIndex + 1) % heroItems.length);
+    }
+
     function setHeroIndex(idx) {
-      heroIndex = idx;
-      renderHeroSpotlight();
+      if (!heroItems.length) return;
+      const nextIdx = (idx + heroItems.length) % heroItems.length;
+      if (nextIdx === heroIndex && document.getElementById(`hero-slide-${nextIdx}`)) return;
+
+      const prevIdx = heroIndex;
+      heroIndex = nextIdx;
+
+      // Cross-fade slides smoothly
+      const prevSlide = document.getElementById(`hero-slide-${prevIdx}`);
+      if (prevSlide) {
+        prevSlide.classList.remove('opacity-100', 'z-10', 'pointer-events-auto');
+        prevSlide.classList.add('opacity-0', 'z-0', 'pointer-events-none');
+      }
+      const prevGlow = document.getElementById(`hero-glow-${prevIdx}`);
+      if (prevGlow) {
+        prevGlow.classList.remove('opacity-25');
+        prevGlow.classList.add('opacity-0');
+      }
+
+      const nextSlide = document.getElementById(`hero-slide-${heroIndex}`);
+      if (nextSlide) {
+        nextSlide.classList.remove('opacity-0', 'z-0', 'pointer-events-none');
+        nextSlide.classList.add('opacity-100', 'z-10', 'pointer-events-auto');
+      }
+      const nextGlow = document.getElementById(`hero-glow-${heroIndex}`);
+      if (nextGlow) {
+        nextGlow.classList.remove('opacity-0');
+        nextGlow.classList.add('opacity-25');
+      }
+
+      // Smoothly update dot indicator sizes and styling
+      heroItems.forEach((_, i) => {
+        const dot = document.getElementById(`hero-dot-${i}`);
+        if (dot) {
+          if (i === heroIndex) {
+            dot.className = 'hero-dot h-2 rounded-full transition-all duration-500 cursor-pointer w-8 bg-indigo-500 shadow-md shadow-indigo-500/50';
+          } else {
+            dot.className = 'hero-dot h-2 rounded-full transition-all duration-500 cursor-pointer w-2 bg-gray-600/70 hover:bg-gray-400';
+          }
+        }
+      });
+
       startHeroTimer();
     }
 
@@ -464,53 +529,60 @@ pub const INDEX_HTML: &str = concat!(
       }
 
       // Pick top 5 popular released blockbusters with backdrop images
-      heroItems = allItems
+      const candidateItems = allItems
         .filter(i => i.backdrop_path && i.vote_average > 0)
         .sort((a, b) => (b.popularity * 0.7 + b.vote_average * 10) - (a.popularity * 0.7 + a.vote_average * 10))
         .slice(0, 5);
 
-      if (heroItems.length === 0) {
+      if (candidateItems.length === 0) {
         heroContainer.classList.add('hidden');
+        pauseHeroTimer();
         return;
       }
 
-      heroContainer.classList.remove('hidden');
+      const candidateIds = candidateItems.map(i => i.tmdb_id).join(',');
+      if (candidateIds === heroRenderedIds && document.getElementById('heroCarousel')) {
+        heroContainer.classList.remove('hidden');
+        return;
+      }
+
+      heroItems = candidateItems;
+      heroRenderedIds = candidateIds;
       if (heroIndex >= heroItems.length) heroIndex = 0;
-      const item = heroItems[heroIndex];
+      heroContainer.classList.remove('hidden');
 
-      const backdropUrl = `https://image.tmdb.org/t/p/w1280${item.backdrop_path}`;
-      const safeTitle = (item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      const year = (item.release_date || '').slice(0, 4);
-
-      const typeBadge = item.media_type === 'tv'
-        ? `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-pink-600/90 text-white shadow-sm">SERIES</span>`
-        : `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600/90 text-white shadow-sm">MOVIE</span>`;
-
-      const langTag = item.is_hindi_dub
-        ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-950/90 text-purple-200 border border-purple-700/50">Pan-India (${item.original_language.toUpperCase()})</span>`
-        : `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-900/90 text-gray-200 border border-gray-700/60">Hindi</span>`;
-
-      const ottBadges = (item.ott_providers || []).map(p => getOttBrandBadge(p)).join(' ');
-
-      const trailerBtn = item.trailer_key
-        ? `<button onclick="openModalWithTrailer(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-red-600/90 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95">
-             <svg width="24" height="24" class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-             Watch Trailer
-           </button>`
-        : '';
-
-      const dotsHtml = heroItems.map((_, idx) => `
-        <button onclick="setHeroIndex(${idx})" class="h-2 rounded-full transition-all cursor-pointer ${idx === heroIndex ? 'w-8 bg-indigo-500 shadow-md shadow-indigo-500/50' : 'w-2 bg-gray-600/70 hover:bg-gray-400'}" title="Go to spotlight ${idx + 1}"></button>
+      // Pre-render all slides into the DOM so images are preloaded and cross-fading is instantaneous & smooth
+      const glowsHtml = heroItems.map((item, idx) => `
+        <div id="hero-glow-${idx}" class="absolute inset-0 bg-cover bg-center filter blur-3xl scale-110 pointer-events-none transition-opacity duration-1000 ease-in-out ${idx === heroIndex ? 'opacity-25' : 'opacity-0'}" style="background-image: url('https://image.tmdb.org/t/p/w1280${item.backdrop_path}')"></div>
       `).join('');
 
-      heroContainer.innerHTML = `
-        <div class="relative w-full rounded-3xl overflow-hidden border border-gray-800/90 bg-gray-950 shadow-2xl mb-8 group" onmouseenter="pauseHeroTimer()" onmouseleave="startHeroTimer()">
-          <!-- Ambient blurred glow backdrop -->
-          <div class="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-20 scale-110 pointer-events-none" style="background-image: url('${backdropUrl}')"></div>
+      const slidesHtml = heroItems.map((item, idx) => {
+        const backdropUrl = `https://image.tmdb.org/t/p/w1280${item.backdrop_path}`;
+        const safeTitle = (item.title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const year = (item.release_date || '').slice(0, 4);
 
-          <!-- Crisp hero banner -->
-          <div class="relative h-72 sm:h-96 md:h-[28rem] w-full overflow-hidden">
-            <img src="${backdropUrl}" alt="${safeTitle}" class="w-full h-full object-cover object-center transform group-hover:scale-102 transition duration-700" />
+        const typeBadge = item.media_type === 'tv'
+          ? `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-pink-600/90 text-white shadow-sm">SERIES</span>`
+          : `<span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600/90 text-white shadow-sm">MOVIE</span>`;
+
+        const langTag = item.is_hindi_dub
+          ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-950/90 text-purple-200 border border-purple-700/50">Pan-India (${item.original_language.toUpperCase()})</span>`
+          : `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-900/90 text-gray-200 border border-gray-700/60">Hindi</span>`;
+
+        const ottBadges = (item.ott_providers || []).map(p => getOttBrandBadge(p)).join(' ');
+
+        const trailerBtn = item.trailer_key
+          ? `<button onclick="openModalWithTrailer(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-red-600/90 hover:bg-red-500 text-white shadow-lg shadow-red-600/30 transition flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95">
+               <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+               Watch Trailer
+             </button>`
+          : '';
+
+        const isActive = idx === heroIndex;
+        return `
+          <div id="hero-slide-${idx}" class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}">
+            <!-- Crisp hero banner image with ambient scale -->
+            <img src="${backdropUrl}" alt="${safeTitle}" class="w-full h-full object-cover object-center transform group-hover:scale-102 transition duration-1000" />
             <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/60 to-transparent"></div>
             <div class="absolute inset-0 bg-gradient-to-r from-gray-950/90 via-gray-950/40 to-transparent"></div>
 
@@ -535,26 +607,49 @@ pub const INDEX_HTML: &str = concat!(
                 ${item.overview || 'Hindi cinema discovery on your private homelab.'}
               </p>
 
-              <!-- Actions & Dots Row -->
-              <div class="flex flex-wrap items-center justify-between gap-4 mt-4 pt-2">
-                <div class="flex items-center gap-3 flex-wrap">
-                  ${trailerBtn}
-                  <button onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gray-800/90 hover:bg-gray-700 text-gray-100 border border-gray-700 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md">
-                    More Info
-                  </button>
-                  <div class="w-36">
-                    ${actionButtonHtml(item)}
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-1.5">
-                  ${dotsHtml}
+              <!-- Actions -->
+              <div class="flex items-center gap-3 flex-wrap mt-4 pt-2">
+                ${trailerBtn}
+                <button onclick="openModal(${item.tmdb_id}, '${item.media_type}')" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gray-800/90 hover:bg-gray-700 text-gray-100 border border-gray-700 transition flex items-center gap-1.5 cursor-pointer backdrop-blur-md">
+                  More Info
+                </button>
+                <div class="w-36">
+                  ${actionButtonHtml(item)}
                 </div>
               </div>
             </div>
           </div>
+        `;
+      }).join('');
+
+      const dotsHtml = heroItems.map((_, idx) => `
+        <button id="hero-dot-${idx}" onclick="setHeroIndex(${idx})" class="hero-dot h-2 rounded-full transition-all duration-500 cursor-pointer ${idx === heroIndex ? 'w-8 bg-indigo-500 shadow-md shadow-indigo-500/50' : 'w-2 bg-gray-600/70 hover:bg-gray-400'}" title="Go to spotlight ${idx + 1}"></button>
+      `).join('');
+
+      heroContainer.innerHTML = `
+        <div id="heroCarousel" class="relative w-full rounded-3xl overflow-hidden border border-gray-800/90 bg-gray-950 shadow-2xl mb-8 group" onmouseenter="pauseHeroTimer()" onmouseleave="startHeroTimer()">
+          ${glowsHtml}
+
+          <div class="relative h-72 sm:h-96 md:h-[28rem] w-full overflow-hidden">
+            ${slidesHtml}
+
+            <!-- Prev / Next Chevrons on Hover -->
+            <button onclick="prevHeroSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 text-white/70 hover:text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 backdrop-blur-md border border-white/10 cursor-pointer shadow-lg hover:scale-110 active:scale-95" title="Previous Spotlight">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button onclick="nextHeroSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 text-white/70 hover:text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 backdrop-blur-md border border-white/10 cursor-pointer shadow-lg hover:scale-110 active:scale-95" title="Next Spotlight">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+
+            <!-- Dots positioned bottom-right over active slide -->
+            <div class="absolute bottom-6 sm:bottom-8 right-5 sm:right-8 z-20 flex items-center gap-1.5 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              ${dotsHtml}
+            </div>
+          </div>
         </div>
       `;
+
+      startHeroTimer();
     }
 
     function getFallbackArtHtml(title, mediaType) {
@@ -603,13 +698,17 @@ pub const INDEX_HTML: &str = concat!(
           if (currentWindow === 'in_theaters' && (item.release_date > todayStr || item.media_type !== 'movie' || isItemOnOtt(item))) return false;
           if (currentWindow === 'on_ott' && (item.release_date > todayStr || !isItemOnOtt(item))) return false;
           if (currentWindow === 'upcoming' && item.release_date <= todayStr) return false;
+          if (currentWindow === 'upcoming_theaters' && (item.release_date <= todayStr || item.media_type !== 'movie' || isItemOnOtt(item))) return false;
+          if (currentWindow === 'upcoming_ott' && (item.release_date <= todayStr || !isItemOnOtt(item))) return false;
           if (currentWindow === 'library' && item.homelab_status === 'unrequested') return false;
         }
 
         if (currentType !== 'all' && item.media_type !== currentType) return false;
         if (langMode === 'hi' && item.is_hindi_dub) return false;
         if (langMode === 'dub' && !item.is_hindi_dub) return false;
-        if (ottMode !== 'all' && !(item.ott_providers || []).includes(ottMode)) return false;
+        if (ottMode === 'theatrical' && (item.media_type !== 'movie' || isItemOnOtt(item))) return false;
+        if (ottMode === 'ott' && !isItemOnOtt(item)) return false;
+        if (ottMode !== 'all' && ottMode !== 'theatrical' && ottMode !== 'ott' && !(item.ott_providers || []).includes(ottMode)) return false;
 
         if (q) {
           const hay = `${item.title} ${item.original_title} ${(item.genres || []).join(' ')} ${(item.ott_providers || []).join(' ')} ${item.overview || ''}`.toLowerCase();
@@ -637,7 +736,7 @@ pub const INDEX_HTML: &str = concat!(
           filtered.sort((a, b) => a.title.localeCompare(b.title));
         } else {
           // newest
-          if (currentWindow === 'upcoming') {
+          if (currentWindow.startsWith('upcoming')) {
             filtered.sort((a, b) => a.release_date.localeCompare(b.release_date));
           } else {
             filtered.sort((a, b) => b.release_date.localeCompare(a.release_date));
